@@ -23,7 +23,6 @@
 moc_*.cpp
 qrc_*.cpp
 ui_*.h
-Makefile*
 *-build-*
 
 # QtCreator
@@ -64,3 +63,5 @@ Makefile*
 *.out
 *.app
 
+/json/
+/lib_json/
