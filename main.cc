@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "json/json.h"
+#include "UAVGoods.h"
 
 using namespace std;          
 int main(int argc, char **argv)   {
@@ -25,6 +26,7 @@ int main(int argc, char **argv)   {
   root["comment"] = Json::Value("Hello, AI!");
         
   cout<<fast.write(root)<<endl;
+  test();
         
   return 0;
 }

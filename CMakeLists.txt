@@ -9,6 +9,7 @@ set(PROJECT_ROOT_PATH "${PROJECT_SOURCE_DIR_DIR}/../")
 
 # include路径
 include_directories(${PROJECT_SOURCE_DIR}/json)
+include_directories(${PROJECT_SOURCE_DIR})
 
 # 设置可执行文件生成路径
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/../bin)
