@@ -64,5 +64,4 @@ CMakeLists.txt.user
 *.out
 *.app
 
-/json/
-/lib_json/
+/uav/
