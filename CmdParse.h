@@ -12,6 +12,7 @@
 #define __CMDPARSE_H__
 
 #include "JsonParse.h"
+#include "Point3.h"
 
 #define SOCKET_HEAD_LEN          8                      ///< 8个字节的头部长度
 
@@ -66,8 +67,6 @@ typedef struct _FOG_
 }FOG;
 
 
-
-
 #define MAX_BUILDING_NUM        50      
 #define MAX_FOG_NUM        50
 
@@ -86,6 +85,20 @@ typedef enum _UAV_STATUS_
     UAV_FOG
 }UAV_STATUS;
 
+typedef enum _UAV_ACTION_
+{ 
+	UAV_STANDBY = 0, 
+	UAV_TAKEOFF, 
+	UAV_MOVING, 
+	UAV_LANDING
+} UAV_ACTION;
+
+typedef struct _KB_
+{
+	double k;
+	double b;
+}KB;
+
 typedef struct _UAV_
 {
     int     nNO;
@@ -96,6 +109,10 @@ typedef struct _UAV_
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
     UAV_STATUS  nStatus;
     int     nGoodsNo;
+	Point3 nTo;
+	Point3 nTarget;
+	UAV_ACTION nAction;
+	KB kb;
 }UAV;
 
 

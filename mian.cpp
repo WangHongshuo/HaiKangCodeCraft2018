@@ -110,7 +110,7 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
  */
 void  AlgorithmCalculationFun(UAVAI *pstAI)
 {
-
+	pstAI->getNextAction();
 }
 
 
@@ -310,7 +310,11 @@ int main(int argc, char *argv[])
     }
 
 	UAVAI *pstAI = new UAVAI;
+	pstMapInfo->nMapX = 100;
+	pstMapInfo->nMapY = 100;
+	pstMapInfo->nMapZ = 100;
 	pstAI->initPtr(pstMapInfo, pstMatchStatus,pstFlayPlane);
+	pstAI->initMap();
 
     // 根据服务器指令，不停的接受发送数据
     while (1)
