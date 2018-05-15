@@ -13,13 +13,16 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 #include "OSSocket.h"
 #include "JsonParse.h"
 #include "CmdParse.h"
+#include "UAVAI.h"
 
 
 #define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
-
+using std::cout;
+using std::endl;
 
 
 /** @fn     int RecvJuderData(OS_SOCKET hSocket, char *pBuffer)
@@ -105,7 +108,7 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
  *  @brief	学生的算法计算， 参数什么的都自己写，
  *	@return void
  */
-void  AlgorithmCalculationFun(MAP_INFO *pstMap, MATCH_STATUS * pstMatch, FLAY_PLANE *pstFlayPlane)
+void  AlgorithmCalculationFun(UAVAI *pstAI)
 {
 
 }
@@ -145,9 +148,9 @@ int main(int argc, char *argv[])
     nPort = atoi(argv[2]);
     strcpy(szToken, argv[3]);
 
-//     strcpy(szIp, "39.106.111.130");
-//     nPort = 4010;
-//     strcpy(szToken, "36d0a20b-7fab-4a93-b7e4-3247533b903a");
+	strcpy(szIp, "39.106.111.130");
+	nPort = 4010;
+	strcpy(szToken, "36d0a20b-7fab-4a93-b7e4-3247533b903a");
 
     printf("server ip %s, prot %d, token %s\n", szIp, nPort, szToken);
 
@@ -181,7 +184,7 @@ int main(int argc, char *argv[])
     {
         return nRet;
     }
-
+	cout << pRecvBuffer << endl;
     // json 解析
     // 获取头部
     CONNECT_NOTICE  stNotice;
@@ -211,6 +214,7 @@ int main(int argc, char *argv[])
     {
         return nRet;
     }
+	cout << pSendBuffer << endl;
 
     //身份验证结果(Judger -> Player)　
     memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
@@ -227,6 +231,7 @@ int main(int argc, char *argv[])
     {
         return 0;
     }
+	cout << pRecvBuffer << endl;
 
     // 是否验证成功
     if (stResult.nResult != 0)
@@ -251,6 +256,7 @@ int main(int argc, char *argv[])
     {
         return nRet;
     }
+	cout << pSendBuffer << endl;
 
     //对战开始通知(Judger -> Player)　 
     memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
@@ -259,6 +265,8 @@ int main(int argc, char *argv[])
     {
         return nRet;
     }
+	cout << pRecvBuffer << endl;
+
     // 解析数据
     //Mapinfo 结构体可能很大，不太适合放在栈中，可以定义为全局或者内存分配
     MAP_INFO            *pstMapInfo;
@@ -301,16 +309,18 @@ int main(int argc, char *argv[])
         pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
     }
 
+	UAVAI *pstAI = new UAVAI;
+	pstAI->initPtr(pstMapInfo, pstMatchStatus,pstFlayPlane);
+
     // 根据服务器指令，不停的接受发送数据
     while (1)
     {
         // 进行当前时刻的数据计算, 填充飞行计划结构体，注意：0时刻不能进行移动，即第一次进入该循环时
         if (pstMatchStatus->nTime != 0)
         {
-            AlgorithmCalculationFun(pstMapInfo, pstMatchStatus, pstFlayPlane);
+            AlgorithmCalculationFun(pstAI);
         }
 
-        
         //发送飞行计划结构体
         memset(pSendBuffer, 0, MAX_SOCKET_BUFFER);
         nRet = CreateFlayPlane(pstFlayPlane, szToken, pSendBuffer, &nLen);
@@ -349,6 +359,7 @@ int main(int argc, char *argv[])
         }
     }
 
+	delete pstAI;
     // 关闭socket
     OSCloseSocket(hSocket);
     // 资源回收

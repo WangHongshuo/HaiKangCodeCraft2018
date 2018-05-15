@@ -12,8 +12,8 @@
 #define __OSSOCKET_H__
 
 // 如果是linux ，定义OS_POSIX
-//#define OS_WINDOWS
-#define OS_POSIX
+#define OS_WINDOWS
+//#define OS_POSIX
 
 
 
