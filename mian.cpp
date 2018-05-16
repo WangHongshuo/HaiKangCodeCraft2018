@@ -310,9 +310,6 @@ int main(int argc, char *argv[])
     }
 
 	UAVAI *pstAI = new UAVAI;
-	pstMapInfo->nMapX = 100;
-	pstMapInfo->nMapY = 100;
-	pstMapInfo->nMapZ = 100;
 	pstAI->initPtr(pstMapInfo, pstMatchStatus,pstFlayPlane);
 	pstAI->initMap();
 

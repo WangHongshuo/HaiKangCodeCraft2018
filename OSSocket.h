@@ -10,24 +10,26 @@
  */
 #ifndef __OSSOCKET_H__
 #define __OSSOCKET_H__
-
+#include <istream>
+#include <stdio.h>
 // 如果是linux ，定义OS_POSIX
-#define OS_WINDOWS
 //#define OS_POSIX
+//#define OS_WINDOWS
 
 
 
 
-#if defined (OS_WINDOWS)
+#if defined (WIN32)
  /////////////////////////////////////////////////////////windows下
 #include<winsock2.h>
 #include <ws2ipdef.h>
-
+#define OS_WINDOWS
 typedef SOCKET                                  OS_SOCKET;
 #define OS_INVALID_SOCKET                       INVALID_SOCKET
 
-#elif defined (OS_POSIX)
+#else
  ///////////////////////////////////////////////////////////////// 其他系统
+#define OS_POSIX
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>

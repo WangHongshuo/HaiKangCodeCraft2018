@@ -27,7 +27,7 @@ void UAVAI::initMap()
 	for (int i = 0; i < map->nMapX; i++)
 	{
 		mapArray[i].resize(map->nMapY);
-		for (int j = 0; i < map->nMapY; j++)
+		for (int j = 0; j < map->nMapY; j++)
 		{
 			mapArray[i][j].resize(map->nMapZ);
 			mapArray[i][j].assign(map->nMapZ, 0);

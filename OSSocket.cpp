@@ -15,8 +15,8 @@
 
 
 #define  LOG_ERROR printf
-#if defined (OS_WINDOWS)
-
+#if defined (WIN32)
+#define OS_WINDOWS
  /** @fn		OS_SOCKET OSOpenSocket(int nAf, int nType, int nProto)
  *  @brief	创建Socket
  *	@param	-I	 - int nAf                  协议
@@ -126,7 +126,8 @@ int OSBind(OS_SOCKET hSocket, OS_ADDR_T *pstAddr)
     return bind(hSocket, (PSOCKADDR)&pstAddr->SA, sizeof(sockaddr_in));
 }
 
-#elif defined (OS_POSIX)
+#else
+#define OS_POSIX
 ///////////////////////////////////////////////////////////////// 其他系统
 
 /** @fn		OS_SOCKET OSOpenSocket(int nAf, int nType, int nProto)

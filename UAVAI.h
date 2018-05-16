@@ -5,6 +5,7 @@
 #include "Point3.h"
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using std::vector;
 
