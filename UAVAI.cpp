@@ -54,9 +54,10 @@ void UAVAI::getNextAction()
 {
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
+		// if crashed, continue
 		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
 			continue;
-		if (match->astWeUav[i].nZ < map->nHLow);
+		if (match->astWeUav[i].nPos.z < map->nHLow);
 	}
 }
 

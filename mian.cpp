@@ -148,9 +148,9 @@ int main(int argc, char *argv[])
     nPort = atoi(argv[2]);
     strcpy(szToken, argv[3]);
 
-	strcpy(szIp, "39.106.111.130");
-	nPort = 4010;
-	strcpy(szToken, "36d0a20b-7fab-4a93-b7e4-3247533b903a");
+	//strcpy(szIp, "39.106.111.130");
+	//nPort = 4010;
+	//strcpy(szToken, "36d0a20b-7fab-4a93-b7e4-3247533b903a");
 
     printf("server ip %s, prot %d, token %s\n", szIp, nPort, szToken);
 

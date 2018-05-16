@@ -177,21 +177,21 @@ int ParserMapInfo(char *pBuffer, MAP_INFO *pstMap)
         cJSON_Delete(pJsonRoot);
         return -1;
     }
-    nRet = JSONGetValue(pParking, "x", false, &(pstMap->nParkingX));
+    nRet = JSONGetValue(pParking, "x", false, &(pstMap->nParkingPos.x));
     if (nRet != 0)
     {
         printf("JSONGetValue error\n");
         cJSON_Delete(pJsonRoot);
         return nRet;
     }
-    nRet = JSONGetValue(pParking, "y", false, &(pstMap->nParkingY));
+    nRet = JSONGetValue(pParking, "y", false, &(pstMap->nParkingPos.y));
     if (nRet != 0)
     {
         printf("JSONGetValue error\n");
         cJSON_Delete(pJsonRoot);
         return nRet;
     }
-
+	pstMap->nParkingPos.z = 0;
     nRet = JSONGetValue(pMap, "h_low", false, &(pstMap->nHLow));
     if (nRet != 0)
     {
@@ -454,19 +454,19 @@ int ParserUav(cJSON *pUavArray, UAV *astUav, int *pNum)
             printf("JSONGetValue error\n");
             return nRet;
         }
-        nRet = JSONGetValue(pUAV, "x", false, &(astUav[i].nX));
+        nRet = JSONGetValue(pUAV, "x", false, &(astUav[i].nPos.x));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
-        nRet = JSONGetValue(pUAV, "y", false, &(astUav[i].nY));
+        nRet = JSONGetValue(pUAV, "y", false, &(astUav[i].nPos.y));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
-        nRet = JSONGetValue(pUAV, "z", false, &(astUav[i].nZ));
+        nRet = JSONGetValue(pUAV, "z", false, &(astUav[i].nPos.z));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
@@ -602,34 +602,35 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
             return nRet;
         }
 
-        nRet = JSONGetValue(pGood, "start_x", false, &(pstStatus->astGoods[i].nStartX));
+        nRet = JSONGetValue(pGood, "start_x", false, &(pstStatus->astGoods[i].nStartPos.x));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
 
-        nRet = JSONGetValue(pGood, "start_y", false, &(pstStatus->astGoods[i].nStartY));
+        nRet = JSONGetValue(pGood, "start_y", false, &(pstStatus->astGoods[i].nStartPos.y));
+        if (nRet != 0)
+        {
+            printf("JSONGetValue error\n");
+            return nRet;
+        }
+		pstStatus->astGoods[i].nStartPos.z = 0;
+
+        nRet = JSONGetValue(pGood, "end_x", false, &(pstStatus->astGoods[i].nEndPos.x));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
 
-        nRet = JSONGetValue(pGood, "end_x", false, &(pstStatus->astGoods[i].nEndX));
+        nRet = JSONGetValue(pGood, "end_y", false, &(pstStatus->astGoods[i].nEndPos.y));
         if (nRet != 0)
         {
             printf("JSONGetValue error\n");
             return nRet;
         }
-
-        nRet = JSONGetValue(pGood, "end_y", false, &(pstStatus->astGoods[i].nEndY));
-        if (nRet != 0)
-        {
-            printf("JSONGetValue error\n");
-            return nRet;
-        }
-
+		pstStatus->astGoods[i].nEndPos.z = 0;
         nRet = JSONGetValue(pGood, "weight", false, &(pstStatus->astGoods[i].nWeight));
         if (nRet != 0)
         {
@@ -792,9 +793,9 @@ int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLe
 
         cJSON_AddItemToArray(pUavArray, pUav);
         cJSON_AddItemToObject(pUav, "no", cJSON_CreateNumber(pstPlane->astUav[i].nNO));
-        cJSON_AddItemToObject(pUav, "x", cJSON_CreateNumber(pstPlane->astUav[i].nX));
-        cJSON_AddItemToObject(pUav, "y", cJSON_CreateNumber(pstPlane->astUav[i].nY));
-        cJSON_AddItemToObject(pUav, "z", cJSON_CreateNumber(pstPlane->astUav[i].nZ));
+        cJSON_AddItemToObject(pUav, "x", cJSON_CreateNumber(pstPlane->astUav[i].nPos.x));
+        cJSON_AddItemToObject(pUav, "y", cJSON_CreateNumber(pstPlane->astUav[i].nPos.y));
+        cJSON_AddItemToObject(pUav, "z", cJSON_CreateNumber(pstPlane->astUav[i].nPos.z));
         cJSON_AddItemToObject(pUav, "goods_no", cJSON_CreateNumber(pstPlane->astUav[i].nGoodsNo));
     }
 

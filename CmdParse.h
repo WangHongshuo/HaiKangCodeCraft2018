@@ -90,7 +90,8 @@ typedef enum _UAV_ACTION_
 	UAV_STANDBY = 0, 
 	UAV_TAKEOFF, 
 	UAV_MOVING, 
-	UAV_LANDING
+	UAV_LANDING,
+	UAV_INPARKING
 } UAV_ACTION;
 
 typedef struct _KB_
@@ -103,9 +104,12 @@ typedef struct _UAV_
 {
     int     nNO;
     char    szType[8];
-    int     nX;
-    int     nY;
-    int     nZ;
+
+    //int     nX;
+    //int     nY;
+    //int     nZ;
+	Point3 nPos;
+
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
     UAV_STATUS  nStatus;
     int     nGoodsNo;
@@ -132,8 +136,10 @@ typedef struct _MAP_INFO_
     int     nMapX;
     int     nMapY;
     int     nMapZ;
-    int     nParkingX;
-    int     nParkingY;
+
+    //int     nParkingX;
+    //int     nParkingY;
+	Point3 nParkingPos;
 
     int     nHLow;
     int     nHHigh;
@@ -161,10 +167,14 @@ typedef struct _FLAY_PLANE_
 typedef struct _GOODS_
 {
     int     nNO;
-    int     nStartX;
-    int     nStartY;
-    int     nEndX;
-    int     nEndY;
+
+    //int     nStartX;
+    //int     nStartY;
+	Point3 nStartPos;
+    //int     nEndX;
+    //int     nEndY;
+	Point3 nEndPos;
+
     int     nWeight;
     int     nValue;
     int     nStartTime;
