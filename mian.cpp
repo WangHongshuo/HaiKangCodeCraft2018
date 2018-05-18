@@ -18,6 +18,7 @@
 #include "JsonParse.h"
 #include "CmdParse.h"
 #include "UAVAI.h"
+#include "Point3.h"
 
 
 #define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
@@ -153,6 +154,8 @@ int main(int argc, char *argv[])
 	//strcpy(szToken, "36d0a20b-7fab-4a93-b7e4-3247533b903a");
 
     printf("server ip %s, prot %d, token %s\n", szIp, nPort, szToken);
+
+	// test
 
     // 开始连接服务器
     nRet = OSCreateSocket(szIp, (unsigned int)nPort, &hSocket);
@@ -304,8 +307,10 @@ int main(int argc, char *argv[])
     // 第一次把无人机的初始赋值给flayplane
     pstFlayPlane->nPurchaseNum = 0;
     pstFlayPlane->nUavNum = pstMapInfo->nUavNum;
+	pstMatchStatus->nUavWeNum = pstMapInfo->nUavNum;
     for (int i = 0; i < pstMapInfo->nUavNum; i++)
     {
+		pstMatchStatus->astWeUav[i] = pstMapInfo->astUav[i];
         pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
     }
 

@@ -3,11 +3,14 @@
 
 #include "CmdParse.h"
 #include "Point3.h"
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
 #include <math.h>
 
 using std::vector;
+using std::cout;
+using std::endl;
 
 class UAVAI
 {
@@ -24,6 +27,7 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
+	vector<Point3> tmpPath;
 	vector<vector<vector<int>>> mapArray;
 	int getMapArrayValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
 	bool isPointInTheMap(Point3 &_p);
@@ -38,6 +42,8 @@ private:
 	void getNextToPos(UAV &_uav);
 	// get next step direction
 	void getNextStep(UAV &_uav);
+	// get uav path vector<Point3>
+	void setUavVirticalPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path);
 
 };
 

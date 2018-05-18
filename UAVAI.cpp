@@ -52,13 +52,11 @@ void UAVAI::initMap()
 
 void UAVAI::setInitUavTarget()
 {
+	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
-	_center.setPoint(map->nMapX / 2, map->nMapY / 2, 0);
-	int _uavNum = map->nUavNum;
-	while (_uavNum)
-	{
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nMapZ);
+	match->astWeUav[0].nTarget = _center;
 
-	}
 }
 
 void UAVAI::getNextAction()
@@ -197,4 +195,25 @@ void UAVAI::getNextStep(UAV & _uav)
 	getKBofLineEqu(_uav.kb, _uav.nPos, _uav.nTo);
 }
 
+void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _path)
+{
+	if (_from.x == _to.x && _from.y == _to.y)
+	{
+		int _pathLength = abs(_to.z - _from.z);
+		_path.resize(_pathLength);
+		for (int i = 0; i < _pathLength; i++)
+			_path[i] = _from;
+		int _direction;
+		if (_to.z > _from.z)
+			_direction = 1;
+		else
+			_direction = -1;
+		for (int i = 0; i < _pathLength; i++)
+			_path[i].z += _direction*(i+1);
+	}
+	else
+	{
+		cout << "Error in setUavVirticalPath" << endl;
+	}
+}
 
