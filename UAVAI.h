@@ -14,9 +14,10 @@ class UAVAI
 public:
 	UAVAI();
 	~UAVAI();
-	typedef enum _AREA_OBJ_ { IS_NULL = 0, IS_BUILDING, IS_FOG, IS_ALLY, IS_ENEMY } AREA_OBJ;
+	typedef enum _AREA_OBJ_ { IS_FOLLOW = -1, IS_NULL , IS_BUILDING, IS_FOG, IS_ALLY, IS_ENEMY } AREA_OBJ;
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
+	void setInitUavTarget();
 	void getNextAction();
 private:
 	bool isInitPtr = false;
@@ -24,12 +25,19 @@ private:
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
 	vector<vector<vector<int>>> mapArray;
+	int getMapArrayValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
+	bool isPointInTheMap(Point3 &_p);
 	void fillArea(vector<vector<vector<int>>> &_Array, const Point3 &_p1, const Point3 &_p2, int _fill);
 	// y=kx+b
 	void getKBofLineEqu(KB &_kb, const Point3 &_p1, const Point3 &_p2);
-	int getNextY(int _x, KB &_kb);
+	int getNextY(const int _x, const KB &_kb);
 	// move action
-	//void moveTo(const Point3 &_from, const Point3 &_to, const vector<vector<vector<int>>> &_mapArray, UAV &_uav);
+	void moving(UAV &_uav);
+	AREA_OBJ checkNextStep(const UAV &_uav);
+	// get uav.nTo
+	void getNextToPos(UAV &_uav);
+	// get next step direction
+	void getNextStep(UAV &_uav);
 
 };
 

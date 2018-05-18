@@ -13,7 +13,9 @@
 
 #include "JsonParse.h"
 #include "Point3.h"
+#include <vector>
 
+using std::vector;
 #define SOCKET_HEAD_LEN          8                      ///< 8个字节的头部长度
 
 
@@ -67,8 +69,8 @@ typedef struct _FOG_
 }FOG;
 
 
-#define MAX_BUILDING_NUM        50      
-#define MAX_FOG_NUM        50
+#define MAX_BUILDING_NUM        100      
+#define MAX_FOG_NUM        100
 
 #define MAX_UAV_NUM         512
 
@@ -91,13 +93,16 @@ typedef enum _UAV_ACTION_
 	UAV_TAKEOFF, 
 	UAV_MOVING, 
 	UAV_LANDING,
-	UAV_INPARKING
+	UAV_INPARKING,
+	UAV_CATCHING,
+	UAV_DELIVERYING
 } UAV_ACTION;
 
 typedef struct _KB_
 {
 	double k;
 	double b;
+	bool isInf = false;
 }KB;
 
 typedef struct _UAV_
@@ -111,11 +116,11 @@ typedef struct _UAV_
 	Point3 nPos;
 
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
-    UAV_STATUS  nStatus;
+	UAV_STATUS  nStatus;
     int     nGoodsNo;
 	Point3 nTo;
 	Point3 nTarget;
-	UAV_ACTION nAction;
+	UAV_ACTION nAction = UAV_ACTION::UAV_INPARKING;
 	KB kb;
 }UAV;
 

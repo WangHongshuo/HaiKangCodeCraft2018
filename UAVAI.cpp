@@ -44,9 +44,20 @@ void UAVAI::initMap()
 	for (int i = 0; i < map->nFogNum; i++)
 	{
 		_p1.setPoint(map->astFog[i].nX, map->astFog[i].nY, map->astFog[i].nB);
-		_p2 =_p1 + Point3(map->astFog[i].nL - 1, map->astFog[i].nW - 1, 0);
+		_p2 = _p1 + Point3(map->astFog[i].nL - 1, map->astFog[i].nW - 1, 0);
 		_p2.z = map->astFog[i].nT;
 		fillArea(mapArray, _p1, _p2, AREA_OBJ::IS_FOG);
+	}
+}
+
+void UAVAI::setInitUavTarget()
+{
+	Point3 _center, _tP;
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, 0);
+	int _uavNum = map->nUavNum;
+	while (_uavNum)
+	{
+
 	}
 }
 
@@ -57,8 +68,42 @@ void UAVAI::getNextAction()
 		// if crashed, continue
 		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
 			continue;
-		if (match->astWeUav[i].nPos.z < map->nHLow);
+		// if uav in the parking land, take off
+		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_INPARKING)
+		{
+			match->astWeUav[i].nAction = UAV_ACTION::UAV_TAKEOFF;
+			match->astWeUav[i].nTarget.setPoint(map->nParkingPos + Point3(0, 0, map->nHLow));
+			moving(match->astWeUav[i]);
+			continue;
+		}
+
+		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_TAKEOFF)
+		{
+			moving(match->astWeUav[i]);
+			continue;
+		}
+
+		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_STANDBY)
+		{
+			// if the uav finished take off action
+
+		}
+
 	}
+}
+
+int UAVAI::getMapArrayValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
+{
+	return _array[_p.x][_p.y][_p.z];
+}
+
+bool UAVAI::isPointInTheMap(Point3 & _p)
+{
+	if (_p.x > map->nMapX - 1 || _p.y > map->nMapY - 1 || _p.z > map->nMapZ - 1 ||
+		_p.x < 0 || _p.y < 0 || _p.z < 0)
+		return false;
+	else
+		return true;
 }
 
 void UAVAI::fillArea(vector<vector<vector<int>>>& _Array, const Point3 & _p1, const Point3 & _p2, int _fill)
@@ -71,11 +116,85 @@ void UAVAI::fillArea(vector<vector<vector<int>>>& _Array, const Point3 & _p1, co
 
 void UAVAI::getKBofLineEqu(KB & _kb, const Point3 & _p1, const Point3 & _p2)
 {
-	_kb.k = double(_p1.y - _p2.y) / double(_p1.x - _p2.x);
-	_kb.b = double(_p2.y) - double(_p2.x*(_p1.y - _p2.y)) / double(_p1.x - _p2.x);
+	if (_p1.x - _p2.x == 0)
+	{
+		_kb.isInf = true;
+	}
+	else
+	{
+		_kb.k = double(_p1.y - _p2.y) / double(_p1.x - _p2.x);
+		_kb.b = double(_p2.y) - double(_p2.x) * _kb.k;
+		_kb.isInf = false;
+	}
 }
 
-int UAVAI::getNextY(int _x, KB & _kb)
+int UAVAI::getNextY(const int _x, const KB & _kb)
 {
-	return ceil(_kb.k*double(_x) + _kb.b);
+	if (_kb.isInf)
+		return 0;
+	else
+		return ceil(_kb.k*double(_x) + _kb.b);
 }
+
+void UAVAI::moving(UAV & _uav)
+{
+	switch (_uav.nAction)
+	{
+	case UAV_ACTION::UAV_MOVING:
+	{
+		break;
+	}
+	case UAV_ACTION::UAV_TAKEOFF:
+	{
+
+		_uav.nPos.z += 1;
+		break;
+	}
+	case UAV_ACTION::UAV_LANDING:
+	{
+		_uav.nPos.z -= 1;
+		break;
+	}
+	case UAV_ACTION::UAV_INPARKING:
+	{
+		break;
+	}
+	default:
+	{
+		break;
+	}
+	}
+
+	// check action
+	if (_uav.nPos == _uav.nTo)
+	{
+		_uav.nAction = UAV_ACTION::UAV_STANDBY;
+	}
+}
+
+UAVAI::AREA_OBJ UAVAI::checkNextStep(const UAV & _uav)
+{
+	switch (mapArray[_uav.nPos.x][_uav.nPos.y][_uav.nPos.z])
+	{
+	case AREA_OBJ::IS_NULL:
+		return AREA_OBJ::IS_NULL;
+	case AREA_OBJ::IS_BUILDING:
+		return AREA_OBJ::IS_BUILDING;
+	case AREA_OBJ::IS_FOG:
+		return AREA_OBJ::IS_FOG;
+	default:
+		return AREA_OBJ::IS_BUILDING;
+	}
+}
+
+void UAVAI::getNextToPos(UAV & _uav)
+{
+
+}
+
+void UAVAI::getNextStep(UAV & _uav)
+{
+	getKBofLineEqu(_uav.kb, _uav.nPos, _uav.nTo);
+}
+
+

@@ -14,9 +14,13 @@ public:
 	int y = -1;
 	int z = -1;
 	void setPoint(int _x, int _y, int _z) { x = _x; y = _y; z = _z;}
+	void setPoint(Point3 &_p);
 	Point3 &operator=(const Point3 &_p);
 	Point3 operator+(const Point3 &_p);
 	Point3 operator-(const Point3 &_p);
+	bool operator==(const Point3 &_p);
+	bool operator!=(const Point3 &_p);
+
 private:
 };
 #endif // !__POINT3_H__
