@@ -1,6 +1,6 @@
 #include "Point3.h"
 
-void Point3::setPoint(Point3 & _p)
+void Point3::setPoint(const Point3 & _p)
 {
 	x = _p.x;
 	y = _p.y;

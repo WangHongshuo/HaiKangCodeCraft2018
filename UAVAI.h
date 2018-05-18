@@ -43,8 +43,10 @@ private:
 	// get next step direction
 	void getNextStep(UAV &_uav);
 	// get uav path vector<Point3>
-	void setUavVirticalPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path);
-
+	void setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
+	void setMinUavHorizontalPath(const Point3 &_from, const Point3 &_to, UAV &_uav);
+	int getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path);
+	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
 };
 
 #endif // !__UAVAI_H__

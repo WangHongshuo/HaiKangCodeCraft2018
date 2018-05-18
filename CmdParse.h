@@ -122,7 +122,7 @@ typedef struct _UAV_
 	Point3 nTarget;
 	UAV_ACTION nAction = UAV_ACTION::UAV_INPARKING;
 	KB kb;
-	int nPathLength;
+	int nPathLength = 0;
 	int nCurrentPathIndex;
 	vector<Point3> nPath;
 	bool nIsMoved = false;
