@@ -17,7 +17,7 @@ class UAVAI
 public:
 	UAVAI();
 	~UAVAI();
-	typedef enum _AREA_OBJ_ { IS_FOLLOW = -1, IS_NULL , IS_BUILDING, IS_FOG, IS_ALLY, IS_ENEMY } AREA_OBJ;
+	typedef enum _AREA_OBJ_ { IS_OUTSIDE = -2, IS_BUILDING, IS_FOG,  IS_NULL ,IS_ALLY, IS_ENEMY, IS_FOLLOW } AREA_OBJ;
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
@@ -37,7 +37,7 @@ private:
 	int getNextY(const int _x, const KB &_kb);
 	// move action
 	void moving(UAV &_uav);
-	AREA_OBJ checkNextStep(const UAV &_uav);
+	AREA_OBJ checkNextStep(const Point3 &_p);
 	// get uav.nTo
 	void getNextToPos(UAV &_uav);
 	// get next step direction
@@ -47,6 +47,8 @@ private:
 	void setMinUavHorizontalPath(const Point3 &_from, const Point3 &_to, UAV &_uav);
 	int getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path);
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
+	// clear uav path
+	void clearUavPath(UAV &_uav);
 };
 
 #endif // !__UAVAI_H__
