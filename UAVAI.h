@@ -1,12 +1,13 @@
 #ifndef __UAVAI_H__
 #define __UAVAI_H__
 
-#include "CmdParse.h"
-#include "Point3.h"
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "CmdParse.h"
+#include "Point3.h"
+#include "AStar.h"
 
 using std::vector;
 using std::cout;
@@ -17,7 +18,7 @@ class UAVAI
 public:
 	UAVAI();
 	~UAVAI();
-	typedef enum _AREA_OBJ_ { IS_OUTSIDE = -2, IS_BUILDING, IS_FOG,  IS_NULL ,IS_ALLY, IS_ENEMY, IS_FOLLOW } AREA_OBJ;
+	typedef enum _AREA_OBJ_ { IS_OUTSIDE = -4, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL } AREA_OBJ;
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();

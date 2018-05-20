@@ -271,7 +271,7 @@ int UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int
 		while (!(_nextStep.x == _tmpTo.x || _nextStep.y == _tmpTo.y))
 		{
 
-			if (checkNextStep(_nextStep + _direction) >= 0)
+			if (checkNextStep(_nextStep + _direction) >= AREA_OBJ::IS_FOG)
 			{
 				_nextStep = _nextStep + _direction;
 				_pathLength++;
@@ -282,14 +282,14 @@ int UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int
 				_tmpDirection1.setPoint(_direction.x, 0, 0);
 				_tmpDirection1.setPoint(0, _direction.y, 0);
 				// 斜着遇障后尝试另外两个垂直方向
-				if (checkNextStep(_nextStep + _tmpDirection1) >= 0)
+				if (checkNextStep(_nextStep + _tmpDirection1) >= AREA_OBJ::IS_FOG)
 				{
 					_nextStep = _nextStep + _tmpDirection1;
 					_path.push_back(_nextStep);
 					_pathLength++;
 					continue;
 				}
-				else if (checkNextStep(_nextStep + _tmpDirection1) >= 0)
+				else if (checkNextStep(_nextStep + _tmpDirection1) >= AREA_OBJ::IS_FOG)
 				{
 					_nextStep = _nextStep + _tmpDirection2;
 					_path.push_back(_nextStep);
