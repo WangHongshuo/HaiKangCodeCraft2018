@@ -131,28 +131,6 @@ void UAVAI::fillArea(vector<vector<vector<int>>>& _Array, const Point3 & _p1, co
 				_Array[i][j][k] = _fill;
 }
 
-void UAVAI::getKBofLineEqu(KB & _kb, const Point3 & _p1, const Point3 & _p2)
-{
-	if (_p1.x - _p2.x == 0)
-	{
-		_kb.isInf = true;
-	}
-	else
-	{
-		_kb.k = double(_p1.y - _p2.y) / double(_p1.x - _p2.x);
-		_kb.b = double(_p2.y) - double(_p2.x) * _kb.k;
-		_kb.isInf = false;
-	}
-}
-
-int UAVAI::getNextY(const int _x, const KB & _kb)
-{
-	if (_kb.isInf)
-		return 0;
-	else
-		return (int)ceil(_kb.k*double(_x) + _kb.b);
-}
-
 void UAVAI::moving(UAV & _uav)
 {
 	// check pos
@@ -166,37 +144,6 @@ void UAVAI::moving(UAV & _uav)
 		_uav.nAction = UAV_ACTION::UAV_STANDBY;
 		clearUavPath(_uav);
 	}
-}
-
-UAVAI::AREA_OBJ UAVAI::checkNextStep(const Point3 &_p)
-{
-	// 先判断是否出界
-	if (_p.x < 0 || _p.y < 0 || _p.z < 0 ||
-		_p.x > map->nMapX - 1 || _p.y > map->nMapY - 1 || _p.z > map->nMapZ - 1)
-	{
-		return AREA_OBJ::IS_OUTSIDE;
-	}
-	switch (mapArray[_p.x][_p.y][_p.z])
-	{
-	case AREA_OBJ::IS_NULL:
-		return AREA_OBJ::IS_NULL;
-	case AREA_OBJ::IS_BUILDING:
-		return AREA_OBJ::IS_BUILDING;
-	case AREA_OBJ::IS_FOG:
-		return AREA_OBJ::IS_FOG;
-	default:
-		return AREA_OBJ::IS_BUILDING;
-	}
-}
-
-void UAVAI::getNextToPos(UAV & _uav)
-{
-
-}
-
-void UAVAI::getNextStep(UAV & _uav)
-{
-	getKBofLineEqu(_uav.kb, _uav.nPos, _uav.nTo);
 }
 
 void UAVAI::getPath(UAV & _uav)

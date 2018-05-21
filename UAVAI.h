@@ -36,16 +36,8 @@ private:
 	int getMapArrayValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
 	bool isPointInTheMap(Point3 &_p);
 	void fillArea(vector<vector<vector<int>>> &_Array, const Point3 &_p1, const Point3 &_p2, int _fill);
-	// y=kx+b
-	void getKBofLineEqu(KB &_kb, const Point3 &_p1, const Point3 &_p2);
-	int getNextY(const int _x, const KB &_kb);
 	// move action
 	void moving(UAV &_uav);
-	AREA_OBJ checkNextStep(const Point3 &_p);
-	// get uav.nTo
-	void getNextToPos(UAV &_uav);
-	// get next step direction
-	void getNextStep(UAV &_uav);
 	// get uav path vector<Point3>
 	void getPath(UAV &_uav);
 	void setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
