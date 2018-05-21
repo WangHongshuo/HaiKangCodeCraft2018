@@ -199,6 +199,7 @@ void UAVAI::getPath(UAV & _uav)
 {
 	clearUavPath(_uav);
 	Point3 _tmpPoint;
+	// take off
 	if (_uav.nPos.z < map->nHLow)
 	{
 		_tmpPoint = _uav.nPos;
@@ -206,10 +207,29 @@ void UAVAI::getPath(UAV & _uav)
 		_uav.nAction = UAV_ACTION::UAV_TAKEOFF;
 		setUavVirticalPath(_uav.nPos, _tmpPoint, _uav.nPath, _uav.nPathLength);
 	}
-	setMinUavHorizontalPath(_uav.nPos, _uav.nTarget, _uav);
-	if (_uav.nPath[_uav.nPathLength - 1].z != _uav.nTarget.z)
+	// moving
+	if (_uav.nPathLength > 0)
 	{
-		setUavVirticalPath(_uav.nPath[_uav.nPathLength - 1], _uav.nTarget, _uav.nPath, _uav.nPathLength);
+		setMinUavHorizontalPath(_uav.nPath[_uav.nPathLength-1], _uav.nTarget, _uav);
+	}
+	else
+	{
+		setMinUavHorizontalPath(_uav.nPos, _uav.nTarget, _uav);
+	}
+	// landing
+	if (_uav.nPathLength > 0)
+	{
+		if (_uav.nPath[_uav.nPathLength - 1].z != _uav.nTarget.z)
+		{
+			setUavVirticalPath(_uav.nPath[_uav.nPathLength - 1], _uav.nTarget, _uav.nPath, _uav.nPathLength);
+		}
+	}
+	else
+	{
+		if (_uav.nPos.z != _uav.nTarget.z)
+		{
+			setUavVirticalPath(_uav.nPos, _uav.nTarget, _uav.nPath, _uav.nPathLength);
+		}
 	}
 	_uav.nIsGetPath = true;
 }
@@ -245,16 +265,17 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 	vector<Point3> _minPath;
 	vector<Point3> _tmpPath;
 	Point3 _tmpToPoint;
-	_tmpToPoint.setPoint(_to);
+	_tmpToPoint.setPoint(_from);
 	// calculate every min path in different z height
 	for (int i = map->nHLow; i <= map->nHHigh; i++)
 	{
+		// if the two points are not in the same hight
 		_tmpPathLength = 0;
 		_tmpPath.resize(0);
 		_tmpToPoint.z = i;
 		setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength);
 		// if the path searcher can't get the valid path
-		if (!getHorizontalPath(_tmpToPoint, _to, i, _tmpPath, _tmpPathLength))
+		if (!getHorizontalPath(_tmpToPoint, _to, _tmpToPoint.z, _tmpPath, _tmpPathLength))
 		{
 			continue;
 		}
