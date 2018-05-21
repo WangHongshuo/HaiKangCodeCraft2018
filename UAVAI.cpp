@@ -56,7 +56,7 @@ void UAVAI::setInitUavTarget()
 {
 	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
-	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nHLow);
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, 0);
 	match->astWeUav[0].nTarget = _center;
 	getPath(match->astWeUav[0]);
 }
@@ -238,6 +238,10 @@ void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<
 {
 	if (_from.x == _to.x && _from.y == _to.y)
 	{
+		if (_from.z == _to.z)
+		{
+			return;
+		}
 		int _newPathLength = abs(_to.z - _from.z);
 		int _lastPathLength = _pathLength;
 		_pathLength += _newPathLength;
@@ -260,6 +264,10 @@ void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<
 
 void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UAV & _uav)
 {
+	if (_from.x == _to.x && _from.y == _to.y)
+	{
+		return;
+	}
 	int _minPathLength = 999999;
 	int _tmpPathLength;
 	vector<Point3> _minPath;
@@ -287,7 +295,6 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 		}
 	}
 	_uav.nPathLength += _minPathLength;
-	_uav.nPath.resize(_uav.nPathLength);
 	_uav.nPath.insert(_uav.nPath.end(), _minPath.begin(), _minPath.end());
 }
 
