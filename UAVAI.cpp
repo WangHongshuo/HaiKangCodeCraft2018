@@ -63,7 +63,7 @@ void UAVAI::getNextAction()
 {
 	if (match->astWeUav[0].nIsGetPath)
 	{
-
+		moving(match->astEnemyUav[0]);
 	}
 	//for (int i = 0; i < match->nUavWeNum; i++)
 	//{
@@ -92,6 +92,15 @@ void UAVAI::getNextAction()
 	//	}
 
 	//}
+
+	// output to plan
+	plan->nUavNum = match->nUavWeNum;
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		
+		plan->astUav[i] = match->astWeUav[i];
+	}
+	plan->nPurchaseNum = 0;
 }
 
 int UAVAI::getMapArrayValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)

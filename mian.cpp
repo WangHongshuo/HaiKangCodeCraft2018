@@ -317,6 +317,7 @@ int main(int argc, char *argv[])
 	UAVAI *pstAI = new UAVAI;
 	pstAI->initPtr(pstMapInfo, pstMatchStatus,pstFlayPlane);
 	pstAI->initMap();
+	pstAI->setInitUavTarget();
 
     // 根据服务器指令，不停的接受发送数据
     while (1)
