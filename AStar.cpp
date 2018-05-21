@@ -24,26 +24,26 @@ bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
 	area.resize(1);
 	area[0].setParameters(from, &to, map);
 	SearchArea _tmpArea;
-	unsigned int _length = 0;
-	while (area[_length].nextPoint != to)
+	unsigned int _index = 0;
+	while (area[_index].nextPoint != to)
 	{
 		// 如果是死路，恢复path，返回false
-		if (area[_length].isDeadPath)
+		if (area[_index].isDeadPath)
 		{
-			clearPathMarkInMap(_length - 1);
+			clearPathMarkInMap(_index + 1);
 			return false;
 		}
-		_tmpArea.setParameters(area[_length].nextPoint, &to, map);
+		_tmpArea.setParameters(area[_index].nextPoint, &to, map);
 		area.push_back(_tmpArea);
-		_length++;
+		_index++;
 	}
-	_path.resize(lastPathLength + _length);
+	_path.resize(lastPathLength + _index + 1);
 	for (unsigned int i = lastPathLength; i < _path.size(); i++)
 	{
 		_path[i] = area[i - lastPathLength].nextPoint;
 	}
-	_pathLength = _length + lastPathLength;
-	clearPathMarkInMap(_length);
+	_pathLength = _path.size();
+	clearPathMarkInMap(_index + 1);
 	return true;
 }
 
