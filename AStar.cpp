@@ -17,10 +17,37 @@ void AStar::setMapAndPoint(vector<vector<vector<int>>>* _map, const Point3 & _p1
 	to = _p2;
 }
 
+bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
+{
+	lastPathLength = _path.size();
+	area.resize(1);
+	area[0].setParameters(from, to, map);
+	SearchArea _tmpArea;
+	unsigned int _length = 0;
+	while (area[_length].nextPoint != to)
+	{
+		// 如果是死路，恢复path，返回false
+		if (area[_length].isDeadPath)
+		{
+			return false;
+		}
+		_tmpArea.setParameters(area[_length].nextPoint, to, map);
+		area.push_back(_tmpArea);
+		_length++;
+	}
+	_path.resize(lastPathLength + _length);
+	for (unsigned int i = lastPathLength; i < _path.size(); i++)
+	{
+		_path[i] = area[i - lastPathLength].nextPoint;
+	}
+	_pathLength = _length + lastPathLength;
+	return true;
+}
+
 int AStar::getDistance(const Point3 & _p1, const Point3 & _p2)
 {
 	int _distance;
-	_distance = pow(_p1.x - _p2.x, 2) + pow(_p1.y - _p2.y, 2);
+	_distance = int(pow(_p1.x - _p2.x, 2) + pow(_p1.y - _p2.y, 2));
 	return _distance;
 }
 
@@ -42,7 +69,7 @@ void SearchPoint::setParameters(const Point3 & _p, Point3 * _to)
 int SearchPoint::getDistance(const Point3 & _from, const Point3 & _to)
 {
 	int _distance;
-	_distance = pow(_from.x - _to.x, 2) + pow(_from.y - _to.y, 2);
+	_distance = int(pow(_from.x - _to.x, 2) + pow(_from.y - _to.y, 2));
 	return _distance;
 }
 
@@ -54,6 +81,9 @@ SearchArea::SearchArea(const Point3 & _parentPoint, const Point3 & _to, vector<v
 	area.resize(0);
 	mapX = _map->size();
 	mapY = (*_map)[0].size();
+	isDeadPath = false;
+	getAreaPoints();
+	getNextPoint();
 }
 
 void SearchArea::setParameters(const Point3 & _parentPoint, const Point3 & _to, vector<vector<vector<int>>>* _map)
@@ -64,6 +94,9 @@ void SearchArea::setParameters(const Point3 & _parentPoint, const Point3 & _to, 
 	area.resize(0);
 	mapX = _map->size();
 	mapY = (*_map)[0].size();
+	isDeadPath = false;
+	getAreaPoints();
+	getNextPoint();
 }
 
 void SearchArea::getAreaPoints()
@@ -86,6 +119,7 @@ void SearchArea::getAreaPoints()
 					area.push_back(_tmpSearchPoint);
 				}
 			}
+			_tmpPoint = parentPoint;
 		}
 	}
 }
@@ -94,7 +128,7 @@ void SearchArea::getNextPoint()
 {
 	int _minDistance = 999999;
 	unsigned int _minDistanceIndex;
-	int _tmpDistance;
+	bool _isGetPoint = false;
 	for (unsigned int i = 0; i < area.size(); i++)
 	{
 		if (area[i].isOpen)
@@ -103,11 +137,19 @@ void SearchArea::getNextPoint()
 			{
 				_minDistance = area[i].distance;
 				_minDistanceIndex = i;
+				_isGetPoint = true;
 			}
 		}
 	}
-	nextPoint = area[_minDistanceIndex].p;
-	area[_minDistanceIndex].isOpen = false;
+	if (_isGetPoint)
+	{
+		nextPoint = area[_minDistanceIndex].p;
+		area[_minDistanceIndex].isOpen = false;
+	}
+	else
+	{
+		isDeadPath = true;
+	}
 }
 
 bool SearchArea::isValidPoint(Point3 & _p)

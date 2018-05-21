@@ -37,6 +37,7 @@ public:
 	Point3 nextPoint;
 	int mapX;
 	int mapY;
+	bool isDeadPath = false;
 	void setParameters(const Point3 &_parentPoint, const Point3 &_to, vector<vector<vector<int>>> *_map);
 private:
 	Point3 to;
@@ -53,12 +54,14 @@ public:
 	AStar();
 	~AStar();
 	void setMapAndPoint(vector<vector<vector<int>>> *_map, const Point3 &_p1, const Point3 &_p2);
-	void getPath(vector<Point3> &_path);
+	bool getPath(vector<Point3> &_path, int &_pathLength);
 
 private:
+	unsigned int lastPathLength;
 	int getDistance(const Point3 &_p1, const Point3 &_p2);
 	Point3 from, to;
 	vector<vector<vector<int>>> *map = NULL;
+	vector<SearchArea> area;
 
 };
 

@@ -30,6 +30,7 @@ private:
 	FLAY_PLANE *plan = NULL;
 	vector<Point3> tmpPath;
 	vector<vector<vector<int>>> mapArray;
+	AStar pathSearcher;
 	int getMapArrayValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
 	bool isPointInTheMap(Point3 &_p);
 	void fillArea(vector<vector<vector<int>>> &_Array, const Point3 &_p1, const Point3 &_p2, int _fill);
@@ -46,7 +47,7 @@ private:
 	// get uav path vector<Point3>
 	void setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
 	void setMinUavHorizontalPath(const Point3 &_from, const Point3 &_to, UAV &_uav);
-	int getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path);
+	bool getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path, int &_pathLength);
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
 	// clear uav path
 	void clearUavPath(UAV &_uav);

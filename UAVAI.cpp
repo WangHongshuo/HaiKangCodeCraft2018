@@ -131,7 +131,7 @@ int UAVAI::getNextY(const int _x, const KB & _kb)
 	if (_kb.isInf)
 		return 0;
 	else
-		return ceil(_kb.k*double(_x) + _kb.b);
+		return (int)ceil(_kb.k*double(_x) + _kb.b);
 }
 
 void UAVAI::moving(UAV & _uav)
@@ -240,7 +240,11 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 		_tmpPath.resize(0);
 		_tmpToPoint.z = i;
 		setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength);
-		_tmpPathLength += getHorizontalPath(_from, _to, i, _tmpPath);
+		// if the path searcher can't get the valid path
+		if (!getHorizontalPath(_from, _to, i, _tmpPath, _tmpPathLength))
+		{
+			continue;
+		}
 		// save min path
 		if (_tmpPathLength < _minPathLength)
 		{
@@ -253,65 +257,18 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 	_uav.nPath.insert(_uav.nPath.end(), _minPath.begin(), _minPath.end());
 }
 
-int UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int & _z, vector<Point3>& _path)
+bool UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int & _z, vector<Point3>& _path, int &_pathLength)
 {
-	int _pathLength = 0;
-	int _lastPathLength = _path.size();
 	Point3 _tmpFrom, _tmpTo;
 	_tmpFrom = _from;
 	_tmpTo = _to;
-	_tmpFrom.z = _tmpTo.z = _z;
-	Point3 _direction = getHorizontalMoveDirection(_tmpFrom, _tmpTo);
-	Point3 _nextStep = _tmpFrom;
-	Point3 _tmpDirection1(0, 0, 0);
-	Point3 _tmpDirection2(0, 0, 0);
-	// 先斜后直
-	while (_nextStep != _tmpTo)
-	{
-		while (!(_nextStep.x == _tmpTo.x || _nextStep.y == _tmpTo.y))
-		{
-
-			if (checkNextStep(_nextStep + _direction) >= AREA_OBJ::IS_FOG)
-			{
-				_nextStep = _nextStep + _direction;
-				_pathLength++;
-				_path.push_back(_nextStep);
-			}
-			else
-			{
-				_tmpDirection1.setPoint(_direction.x, 0, 0);
-				_tmpDirection1.setPoint(0, _direction.y, 0);
-				// 斜着遇障后尝试另外两个垂直方向
-				if (checkNextStep(_nextStep + _tmpDirection1) >= AREA_OBJ::IS_FOG)
-				{
-					_nextStep = _nextStep + _tmpDirection1;
-					_path.push_back(_nextStep);
-					_pathLength++;
-					continue;
-				}
-				else if (checkNextStep(_nextStep + _tmpDirection1) >= AREA_OBJ::IS_FOG)
-				{
-					_nextStep = _nextStep + _tmpDirection2;
-					_path.push_back(_nextStep);
-					_pathLength++;
-					continue;
-				}
-				// 躲避障障碍失败或出界后回滚路径并返回-1
-				else
-				{
-					_path.resize(_lastPathLength);
-					return -1;
-				}
-			}
-		}
-		_direction = getHorizontalMoveDirection(_nextStep, _tmpTo);
-		while (_nextStep != _tmpTo)
-		{
-
-		}
-	}
-
-	return _pathLength;
+	_tmpFrom.z = _z;
+	_tmpTo.z = _z;
+	pathSearcher.setMapAndPoint(&mapArray, _tmpFrom, _tmpTo);
+	if (pathSearcher.getPath(_path, _pathLength))
+		return true;
+	else
+		return false;
 }
 
 Point3 UAVAI::getHorizontalMoveDirection(const Point3 & _from, const Point3 & _to)
