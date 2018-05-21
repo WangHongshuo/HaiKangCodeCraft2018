@@ -48,6 +48,8 @@ void UAVAI::initMap()
 		_p2.z = map->astFog[i].nT;
 		fillArea(mapArray, _p1, _p2, AREA_OBJ::IS_FOG);
 	}
+	map->nHLow -= 1;
+	map->nHHigh -= 1;
 }
 
 void UAVAI::setInitUavTarget()
