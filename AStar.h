@@ -9,6 +9,9 @@
 using std::vector;
 using std::pow;
 
+void setMarkInMap(vector<vector<vector<int>>> &_map, const Point3 &_p, const int &_mark);
+int getMarkInMap(vector<vector<vector<int>>> &_map, const Point3 &_p);
+
 // ËÑË÷µã
 class SearchPoint
 {
@@ -18,7 +21,6 @@ public:
 	~SearchPoint() { to = NULL; };
 	Point3 p;
 	Point3 *to = NULL;
-	bool isOpen = true;
 	int distance = -1;
 	void setParameters(const Point3 &_p, Point3 *_to);
 private:
@@ -30,17 +32,18 @@ private:
 class SearchArea
 {
 public:
-	SearchArea(const Point3 &_parentPoint, const Point3 &_to, vector<vector<vector<int>>> *_map);
+	SearchArea(const Point3 &_parentPoint, Point3 *_to, vector<vector<vector<int>>> *_map);
 	SearchArea() {};
-	~SearchArea() { map = NULL; };
+	~SearchArea() { map = NULL; to = NULL; };
 	Point3 parentPoint;
 	Point3 nextPoint;
 	int mapX;
 	int mapY;
 	bool isDeadPath = false;
-	void setParameters(const Point3 &_parentPoint, const Point3 &_to, vector<vector<vector<int>>> *_map);
+	void setParameters(const Point3 &_parentPoint, Point3 *_to, vector<vector<vector<int>>> *_map);
 private:
-	Point3 to;
+	Point3 *to = NULL;
+	int MARK = 1;
 	vector<vector<vector<int>>> *map = NULL;
 	vector<SearchPoint> area;
 	void getAreaPoints();
@@ -62,7 +65,7 @@ private:
 	Point3 from, to;
 	vector<vector<vector<int>>> *map = NULL;
 	vector<SearchArea> area;
-
+	void clearPathMarkInMap(const int &_length);
 };
 
 #endif

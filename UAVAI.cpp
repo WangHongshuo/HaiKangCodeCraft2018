@@ -54,40 +54,44 @@ void UAVAI::setInitUavTarget()
 {
 	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
-	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nMapZ);
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nHLow);
 	match->astWeUav[0].nTarget = _center;
-
+	getPath(match->astWeUav[0]);
 }
 
 void UAVAI::getNextAction()
 {
-	for (int i = 0; i < match->nUavWeNum; i++)
+	if (match->astWeUav[0].nIsGetPath)
 	{
-		// if crashed, continue
-		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
-			continue;
-		// if uav in the parking land, take off
-		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_INPARKING)
-		{
-			match->astWeUav[i].nAction = UAV_ACTION::UAV_TAKEOFF;
-			match->astWeUav[i].nTarget.setPoint(map->nParkingPos + Point3(0, 0, map->nHLow));
-			moving(match->astWeUav[i]);
-			continue;
-		}
-
-		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_TAKEOFF)
-		{
-			moving(match->astWeUav[i]);
-			continue;
-		}
-
-		if (match->astWeUav[i].nAction == UAV_ACTION::UAV_STANDBY)
-		{
-			// if the uav finished take off action
-
-		}
 
 	}
+	//for (int i = 0; i < match->nUavWeNum; i++)
+	//{
+	//	// if crashed, continue
+	//	if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
+	//		continue;
+	//	// if uav in the parking land, take off
+	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_INPARKING)
+	//	{
+	//		match->astWeUav[i].nAction = UAV_ACTION::UAV_TAKEOFF;
+	//		match->astWeUav[i].nTarget.setPoint(map->nParkingPos + Point3(0, 0, map->nHLow));
+	//		moving(match->astWeUav[i]);
+	//		continue;
+	//	}
+
+	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_TAKEOFF)
+	//	{
+	//		moving(match->astWeUav[i]);
+	//		continue;
+	//	}
+
+	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_STANDBY)
+	//	{
+	//		// if the uav finished take off action
+
+	//	}
+
+	//}
 }
 
 int UAVAI::getMapArrayValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
@@ -136,37 +140,16 @@ int UAVAI::getNextY(const int _x, const KB & _kb)
 
 void UAVAI::moving(UAV & _uav)
 {
-	switch (_uav.nAction)
+	// check pos
+	if (_uav.nCurrentPathIndex <= _uav.nPathLength - 1)
 	{
-	case UAV_ACTION::UAV_MOVING:
-	{
-		break;
+		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
+		_uav.nCurrentPathIndex++;
 	}
-	case UAV_ACTION::UAV_TAKEOFF:
-	{
-
-		_uav.nPos.z += 1;
-		break;
-	}
-	case UAV_ACTION::UAV_LANDING:
-	{
-		_uav.nPos.z -= 1;
-		break;
-	}
-	case UAV_ACTION::UAV_INPARKING:
-	{
-		break;
-	}
-	default:
-	{
-		break;
-	}
-	}
-
-	// check action
-	if (_uav.nPos == _uav.nTo)
+	else
 	{
 		_uav.nAction = UAV_ACTION::UAV_STANDBY;
+		clearUavPath(_uav);
 	}
 }
 
@@ -199,6 +182,25 @@ void UAVAI::getNextToPos(UAV & _uav)
 void UAVAI::getNextStep(UAV & _uav)
 {
 	getKBofLineEqu(_uav.kb, _uav.nPos, _uav.nTo);
+}
+
+void UAVAI::getPath(UAV & _uav)
+{
+	clearUavPath(_uav);
+	Point3 _tmpPoint;
+	if (_uav.nPos.z < map->nHLow)
+	{
+		_tmpPoint = _uav.nPos;
+		_tmpPoint.z = map->nHLow;
+		_uav.nAction = UAV_ACTION::UAV_TAKEOFF;
+		setUavVirticalPath(_uav.nPos, _tmpPoint, _uav.nPath, _uav.nPathLength);
+	}
+	setMinUavHorizontalPath(_uav.nPos, _uav.nTarget, _uav);
+	if (_uav.nPath[_uav.nPathLength - 1].z != _uav.nTarget.z)
+	{
+		setUavVirticalPath(_uav.nPath[_uav.nPathLength - 1], _uav.nTarget, _uav.nPath, _uav.nPathLength);
+	}
+	_uav.nIsGetPath = true;
 }
 
 void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
@@ -241,7 +243,7 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 		_tmpToPoint.z = i;
 		setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength);
 		// if the path searcher can't get the valid path
-		if (!getHorizontalPath(_from, _to, i, _tmpPath, _tmpPathLength))
+		if (!getHorizontalPath(_tmpToPoint, _to, i, _tmpPath, _tmpPathLength))
 		{
 			continue;
 		}
