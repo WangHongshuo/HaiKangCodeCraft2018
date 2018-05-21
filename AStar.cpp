@@ -165,6 +165,8 @@ bool SearchArea::isValidPoint(Point3 & _p)
 {
 	if (_p.x > mapX - 1 || _p.y > mapY - 1 || _p.x < 0 || _p.y < 0)
 		return false;
+	else if (getMarkInMap(*map, _p) <= -3)
+		return false;
 	else
 		return true;
 }

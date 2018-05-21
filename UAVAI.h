@@ -31,6 +31,8 @@ private:
 	vector<Point3> tmpPath;
 	vector<vector<vector<int>>> mapArray;
 	AStar pathSearcher;
+	// copy Uav
+	void copyUav(const UAV &_src, UAV &_dst);
 	int getMapArrayValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
 	bool isPointInTheMap(Point3 &_p);
 	void fillArea(vector<vector<vector<int>>> &_Array, const Point3 &_p1, const Point3 &_p2, int _fill);

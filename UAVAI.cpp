@@ -48,8 +48,6 @@ void UAVAI::initMap()
 		_p2.z = map->astFog[i].nT;
 		fillArea(mapArray, _p1, _p2, AREA_OBJ::IS_FOG);
 	}
-	map->nHLow -= 1;
-	map->nHHigh -= 1;
 }
 
 void UAVAI::setInitUavTarget()
@@ -65,7 +63,7 @@ void UAVAI::getNextAction()
 {
 	if (match->astWeUav[0].nIsGetPath)
 	{
-		moving(match->astEnemyUav[0]);
+		moving(match->astWeUav[0]);
 	}
 	//for (int i = 0; i < match->nUavWeNum; i++)
 	//{
@@ -99,10 +97,16 @@ void UAVAI::getNextAction()
 	plan->nUavNum = match->nUavWeNum;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
-		
-		plan->astUav[i] = match->astWeUav[i];
+		copyUav(match->astWeUav[i], plan->astUav[i]);
 	}
 	plan->nPurchaseNum = 0;
+}
+
+void UAVAI::copyUav(const UAV & _src, UAV & _dst)
+{
+	_dst.nPos = _src.nPos;
+	_dst.nStatus = _src.nStatus;
+	_dst.nGoodsNo = _src.nGoodsNo;
 }
 
 int UAVAI::getMapArrayValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
@@ -204,7 +208,6 @@ void UAVAI::getPath(UAV & _uav)
 	{
 		_tmpPoint = _uav.nPos;
 		_tmpPoint.z = map->nHLow;
-		_uav.nAction = UAV_ACTION::UAV_TAKEOFF;
 		setUavVirticalPath(_uav.nPos, _tmpPoint, _uav.nPath, _uav.nPathLength);
 	}
 	// moving
@@ -335,6 +338,7 @@ void UAVAI::clearUavPath(UAV & _uav)
 {
 	_uav.nPath.resize(0);
 	_uav.nPathLength = 0;
+	_uav.nCurrentPathIndex = 0;
 	_uav.nIsGetPath = false;
 	_uav.nIsMoved = false;
 	_uav.nAction = UAV_ACTION::UAV_STANDBY;
