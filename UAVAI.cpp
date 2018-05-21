@@ -236,20 +236,21 @@ void UAVAI::getPath(UAV & _uav)
 
 void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
 {
-	if (_from.x == _to.x && _from.y == _to.y)
+	Point3 _tmpFrom = _from;
+	if (_tmpFrom.x == _to.x && _tmpFrom.y == _to.y)
 	{
-		if (_from.z == _to.z)
+		if (_tmpFrom.z == _to.z)
 		{
 			return;
 		}
-		int _newPathLength = abs(_to.z - _from.z);
+		int _newPathLength = abs(_to.z - _tmpFrom.z);
 		int _lastPathLength = _pathLength;
 		_pathLength += _newPathLength;
 		_path.resize(_pathLength);
 		for (int i = 0; i < _newPathLength; i++)
-			_path[_lastPathLength + i] = _from;
+			_path[_lastPathLength + i] = _tmpFrom;
 		int _direction;
-		if (_to.z > _from.z)
+		if (_to.z > _tmpFrom.z)
 			_direction = 1;
 		else
 			_direction = -1;
@@ -295,7 +296,10 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 		}
 	}
 	_uav.nPathLength += _minPathLength;
-	_uav.nPath.insert(_uav.nPath.end(), _minPath.begin(), _minPath.end());
+	for (int i = 0; i < _minPathLength; i++)
+	{
+		_uav.nPath.push_back(_minPath[i]);
+	}
 }
 
 bool UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int & _z, vector<Point3>& _path, int &_pathLength)
