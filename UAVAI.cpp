@@ -17,6 +17,8 @@ void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLAY_PLANE *_flayPlane
 	match = _match;
 	plan = _flayPlane;
 	isInitPtr = true;
+	UAVNum = match->nUavWeNum;
+	UAVAliveNum = match->nUavWeNum;
 }
 
 void UAVAI::initMap()
@@ -48,79 +50,71 @@ void UAVAI::initMap()
 		_p2.z = map->astFog[i].nT;
 		fillArea(mapArray, _p1, _p2, AREA_OBJ::IS_FOG);
 	}
+	statusMap = mapArray;
 }
 
 void UAVAI::setInitUavTarget()
 {
 	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
-	_center.setPoint(map->nMapX / 2, map->nMapY / 2, 0);
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nHLow);
 	match->astWeUav[0].nTarget = _center;
 	getPath(match->astWeUav[0]);
+	for (int i = 1; i < match->nUavWeNum; i++)
+	{
+		match->astWeUav[i].nPathLength = match->astWeUav[0].nPathLength - i;
+		match->astWeUav[i].nPath = match->astWeUav[0].nPath;
+		match->astWeUav[i].nPath.resize(match->astWeUav[i].nPathLength);
+		match->astWeUav[i].nIsGetPath = true;
+	}
 }
 
 void UAVAI::getNextAction()
 {
-	if (match->astWeUav[0].nIsGetPath)
+	UAVAliveNum = 0;
+	int planIndex = 0;
+	UAVNum = match->nUavWeNum;
+	for (int i = 0; i < UAVNum; i++)
 	{
-		moving(match->astWeUav[0]);
+		// if the uav crashed, clear uav's last position map mark and set alive flag to false
+		if (!match->astWeUav[i].nIsAlive)
+			continue;
+		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
+		{
+			match->astWeUav[i].nIsAlive = false;
+			setMapValue(statusMap, match->astWeUav[i].nPos, AREA_OBJ::IS_NULL);
+			continue;
+		}
+		if (match->astWeUav[i].nIsGetPath)
+		{
+			moving(match->astWeUav[i]);
+		}
+		copyUav(match->astWeUav[i], plan->astUav[planIndex]);
+		planIndex++;
 	}
-	//for (int i = 0; i < match->nUavWeNum; i++)
-	//{
-	//	// if crashed, continue
-	//	if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
-	//		continue;
-	//	// if uav in the parking land, take off
-	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_INPARKING)
-	//	{
-	//		match->astWeUav[i].nAction = UAV_ACTION::UAV_TAKEOFF;
-	//		match->astWeUav[i].nTarget.setPoint(map->nParkingPos + Point3(0, 0, map->nHLow));
-	//		moving(match->astWeUav[i]);
-	//		continue;
-	//	}
-
-	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_TAKEOFF)
-	//	{
-	//		moving(match->astWeUav[i]);
-	//		continue;
-	//	}
-
-	//	if (match->astWeUav[i].nAction == UAV_ACTION::UAV_STANDBY)
-	//	{
-	//		// if the uav finished take off action
-
-	//	}
-
-	//}
-
-	// output to plan
-	plan->nUavNum = match->nUavWeNum;
-	for (int i = 0; i < match->nUavWeNum; i++)
-	{
-		copyUav(match->astWeUav[i], plan->astUav[i]);
-	}
+	UAVAliveNum = planIndex;
+	plan->nUavNum = UAVAliveNum;
 	plan->nPurchaseNum = 0;
 }
 
 void UAVAI::copyUav(const UAV & _src, UAV & _dst)
 {
+	_dst.nNO = _src.nNO;
+	strcpy(_dst.szType, _src.szType);
 	_dst.nPos = _src.nPos;
+	_dst.nLoadWeight = _src.nLoadWeight;
 	_dst.nStatus = _src.nStatus;
 	_dst.nGoodsNo = _src.nGoodsNo;
 }
 
-int UAVAI::getMapArrayValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
+int UAVAI::getMapValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
 {
 	return _array[_p.x][_p.y][_p.z];
 }
 
-bool UAVAI::isPointInTheMap(Point3 & _p)
+void UAVAI::setMapValue(vector<vector<vector<int>>>& _array, const Point3 & _p, int _v)
 {
-	if (_p.x > map->nMapX - 1 || _p.y > map->nMapY - 1 || _p.z > map->nMapZ - 1 ||
-		_p.x < 0 || _p.y < 0 || _p.z < 0)
-		return false;
-	else
-		return true;
+	_array[_p.x][_p.y][_p.z] = _v;
 }
 
 void UAVAI::fillArea(vector<vector<vector<int>>>& _Array, const Point3 & _p1, const Point3 & _p2, int _fill)
@@ -136,7 +130,14 @@ void UAVAI::moving(UAV & _uav)
 	// check pos
 	if (_uav.nCurrentPathIndex <= _uav.nPathLength - 1)
 	{
+		// if there is something in the next position, stop moving action
+		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
+			return;
+		// clear uav's last position map mark
+		setMapValue(statusMap, _uav.nPos, AREA_OBJ::IS_NULL);
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
+		// set uav's next position map mark
+		setMapValue(statusMap, _uav.nPos, _uav.nNO);
 		_uav.nCurrentPathIndex++;
 	}
 	else

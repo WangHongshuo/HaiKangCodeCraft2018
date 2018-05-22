@@ -56,7 +56,7 @@ int AStar::getDistance(const Point3 & _p1, const Point3 & _p2)
 
 void AStar::clearPathMarkInMap(const int &_length)
 {
-	int _mark = 0;
+	int _mark = -1;
 	for (int i = 0; i < _length; i++)
 	{
 		setMarkInMap(*map, area[i].nextPoint, _mark);
@@ -123,7 +123,7 @@ void SearchArea::getAreaPoints()
 			_tmpPoint.y += j;
 			if (isValidPoint(_tmpPoint))
 			{
-				if (_tmpPoint == parentPoint || getMarkInMap(*map,_tmpPoint) == 1)
+				if (_tmpPoint == parentPoint || getMarkInMap(*map,_tmpPoint) == PATHMARK)
 					continue;
 				else
 				{
@@ -153,7 +153,7 @@ void SearchArea::getNextPoint()
 	if (_isGetPoint)
 	{
 		nextPoint = area[_minDistanceIndex].p;
-		setMarkInMap(*map, nextPoint, MARK);
+		setMarkInMap(*map, nextPoint, PATHMARK);
 	}
 	else
 	{
@@ -165,7 +165,7 @@ bool SearchArea::isValidPoint(Point3 & _p)
 {
 	if (_p.x > mapX - 1 || _p.y > mapY - 1 || _p.x < 0 || _p.y < 0)
 		return false;
-	else if (getMarkInMap(*map, _p) <= -3)
+	else if (getMarkInMap(*map, _p) <= -4)
 		return false;
 	else
 		return true;

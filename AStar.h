@@ -43,7 +43,7 @@ public:
 	void setParameters(const Point3 &_parentPoint, Point3 *_to, vector<vector<vector<int>>> *_map);
 private:
 	Point3 *to = NULL;
-	int MARK = 1;
+	int PATHMARK = 1;
 	vector<vector<vector<int>>> *map = NULL;
 	vector<SearchPoint> area;
 	void getAreaPoints();

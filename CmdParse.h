@@ -96,13 +96,6 @@ typedef enum _UAV_ACTION_
 	UAV_DELIVERYING
 } UAV_ACTION;
 
-typedef struct _KB_
-{
-	double k;
-	double b;
-	bool isInf = false;
-}KB;
-
 typedef struct _UAV_
 {
     int     nNO;
@@ -116,15 +109,14 @@ typedef struct _UAV_
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
 	UAV_STATUS  nStatus;
     int     nGoodsNo;
-	Point3 nTo;
 	Point3 nTarget;
 	UAV_ACTION nAction = UAV_ACTION::UAV_INPARKING;
-	KB kb;
 	int nPathLength = 0;
 	int nCurrentPathIndex = 0;
 	vector<Point3> nPath;
 	bool nIsMoved = false;
 	bool nIsGetPath = false;
+	bool nIsAlive = true;
 }UAV;
 
 
