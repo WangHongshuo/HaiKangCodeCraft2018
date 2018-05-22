@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <string.h>
 #include "CmdParse.h"
 #include "Point3.h"
 #include "AStar.h"
