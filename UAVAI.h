@@ -44,7 +44,7 @@ private:
 	void moving(UAV &_uav);
 	// get uav path vector<Point3>
 	void getPath(UAV &_uav);
-	void setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
+	bool setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
 	void setMinUavHorizontalPath(const Point3 &_from, const Point3 &_to, UAV &_uav);
 	bool getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path, int &_pathLength);
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);

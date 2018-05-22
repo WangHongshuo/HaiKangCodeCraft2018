@@ -32,7 +32,7 @@ void UAVAI::initMap()
 		for (int j = 0; j < map->nMapY; j++)
 		{
 			mapArray[i][j].resize(map->nMapZ);
-			mapArray[i][j].assign(map->nMapZ, 0);
+			mapArray[i][j].assign(map->nMapZ, AREA_OBJ::IS_NULL);
 		}
 	}
 	// init building in the mapArray
@@ -60,12 +60,15 @@ void UAVAI::setInitUavTarget()
 	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nHLow);
 	match->astWeUav[0].nTarget = _center;
 	getPath(match->astWeUav[0]);
-	for (int i = 1; i < match->nUavWeNum; i++)
+	int _tmp = 0;
+	for (int i = match->nUavWeNum-1; i >= 0; i--)
 	{
-		match->astWeUav[i].nPathLength = match->astWeUav[0].nPathLength - i;
+		match->astWeUav[i].nPathLength = map->nHLow + _tmp;
 		match->astWeUav[i].nPath = match->astWeUav[0].nPath;
 		match->astWeUav[i].nPath.resize(match->astWeUav[i].nPathLength);
 		match->astWeUav[i].nIsGetPath = true;
+		match->astWeUav[i].nAction = UAV_ACTION::UAV_MOVING;
+		_tmp++;
 	}
 }
 
@@ -77,11 +80,11 @@ void UAVAI::getNextAction()
 	for (int i = 0; i < UAVNum; i++)
 	{
 		// if the uav crashed, clear uav's last position map mark and set alive flag to false
-		if (!match->astWeUav[i].nIsAlive)
+		if (match->astWeUav[i].nIsCrash)
 			continue;
 		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
 		{
-			match->astWeUav[i].nIsAlive = false;
+			match->astWeUav[i].nIsCrash = true;
 			setMapValue(statusMap, match->astWeUav[i].nPos, AREA_OBJ::IS_NULL);
 			continue;
 		}
@@ -151,7 +154,7 @@ void UAVAI::getPath(UAV & _uav)
 {
 	clearUavPath(_uav);
 	Point3 _tmpPoint;
-	// take off
+	// take off (when the uav.pos.z < map.nHLow && uav.target is under the uav.pos, there will be something wrong!) 
 	if (_uav.nPos.z < map->nHLow)
 	{
 		_tmpPoint = _uav.nPos;
@@ -185,14 +188,15 @@ void UAVAI::getPath(UAV & _uav)
 	_uav.nIsGetPath = true;
 }
 
-void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
+bool UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
 {
 	Point3 _tmpFrom = _from;
+	int _lastPathLength = _pathLength;
 	if (_tmpFrom.x == _to.x && _tmpFrom.y == _to.y)
 	{
 		if (_tmpFrom.z == _to.z)
 		{
-			return;
+			return true;
 		}
 		int _newPathLength = abs(_to.z - _tmpFrom.z);
 		int _lastPathLength = _pathLength;
@@ -207,10 +211,22 @@ void UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<
 			_direction = -1;
 		for (int i = 0; i < _newPathLength; i++)
 			_path[_lastPathLength + i].z += _direction*(i + 1);
+		// check the end of path point
+		if (getMapValue(mapArray, _path[_pathLength - 1]) <= AREA_OBJ::IS_BUILDING)
+		{
+			_pathLength = _lastPathLength;
+			_path.resize(_lastPathLength);
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 	else
 	{
 		cout << "Error in setUavVirticalPath" << endl;
+		return false;
 	}
 }
 
@@ -233,7 +249,11 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, UA
 		_tmpPathLength = 0;
 		_tmpPath.resize(0);
 		_tmpToPoint.z = i;
-		setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength);
+		// if the virtival path contains barrier 
+		if (!setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength))
+		{
+			continue;
+		}
 		// if the path searcher can't get the valid path
 		if (!getHorizontalPath(_tmpToPoint, _to, _tmpToPoint.z, _tmpPath, _tmpPathLength))
 		{

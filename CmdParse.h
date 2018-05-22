@@ -114,9 +114,9 @@ typedef struct _UAV_
 	int nPathLength = 0;
 	int nCurrentPathIndex = 0;
 	vector<Point3> nPath;
+	bool nIsCrash = false;
 	bool nIsMoved = false;
 	bool nIsGetPath = false;
-	bool nIsAlive = true;
 }UAV;
 
 
@@ -180,6 +180,7 @@ typedef struct _GOODS_
     int     nStartTime;
     int     nRemainTime;
     int     nState;
+	int     nCatchedUavNo = -1;
 }GOODS;
 
 typedef struct _MATCH_STATUS_
