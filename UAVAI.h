@@ -25,6 +25,7 @@ public:
 	void setInitUavTarget();
 	void getNextAction();
 private:
+	int money = 0;
 	int UAVAliveNum = -1;
 	int UAVNum = -1;
 	bool isInitPtr = false;
@@ -34,6 +35,7 @@ private:
 	vector<Point3> tmpPath;
 	vector<vector<vector<int>>> mapArray;
 	vector<vector<vector<int>>> statusMap;
+	vector<GOODSSTATUS> goodsStatus;
 	AStar pathSearcher;
 	// copy Uav
 	void copyUav(const UAV &_src, UAV &_dst);
@@ -44,12 +46,17 @@ private:
 	void moving(UAV &_uav);
 	// get uav path vector<Point3>
 	void getPath(UAV &_uav);
+	void getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
 	bool setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
-	void setMinUavHorizontalPath(const Point3 &_from, const Point3 &_to, UAV &_uav);
+	void setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
 	bool getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path, int &_pathLength);
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
 	// clear uav path
 	void clearUavPath(UAV &_uav);
+	// get money
+
+	// search goods
+	void searchGoods();
 };
 
 #endif // !__UAVAI_H__

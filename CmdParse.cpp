@@ -659,6 +659,13 @@ int ParserMatchStatus(char *pBuffer, MATCH_STATUS *pstStatus)
             return nRet;
         }
 
+		nRet = JSONGetValue(pGood, "left_time", false, &(pstStatus->astGoods[i].nLeftTime));
+		if (nRet != 0)
+		{
+			printf("JSONGetValue error\n");
+			return nRet;
+		}
+
         nRet = JSONGetValue(pGood, "status", false, &(pstStatus->astGoods[i].nState));
         if (nRet != 0)
         {

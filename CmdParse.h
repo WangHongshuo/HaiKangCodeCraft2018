@@ -19,46 +19,44 @@ using std::vector;
 #define SOCKET_HEAD_LEN          8                      ///< 8个字节的头部长度
 
 
-typedef struct _CONNECT_NOTICE_
+struct CONNECT_NOTICE
 {
     char    szNotice[64];
     char    szMsg[128];
-}CONNECT_NOTICE;
+};
 
-typedef struct _TOKEN_INFO_
+struct TOKEN_INFO
 {
     char    szToken[64];
     char    szAction[64];
-}TOKEN_INFO;
+};
 
 
-typedef struct _TOKEN_RESULT_
+struct TOKEN_RESULT
 {
     char    szToken[64];
     char    szNotice[64];
     char    szRoundId[64];
     char    szPalyerId[64];
     int     nResult;
-}TOKEN_RESULT;
+};
 
-typedef struct _READY_PARAM_
+struct READY_PARAM
 {
     char    szToken[64];
     char    szAction[64];
-}READY_PARAM;
+};
 
-
-
-typedef struct _BUILDING_
+struct BUILDING
 {
     int     nX;
     int     nY;
     int     nL;
     int     nW;
     int     nH;
-}BUILDING;
+};
 
-typedef struct _FOG_
+struct FOG
 {
     int     nX;
     int     nY;
@@ -66,79 +64,69 @@ typedef struct _FOG_
     int     nW;
     int     nB;
     int     nT;
-}FOG;
+};
 
 
 #define MAX_BUILDING_NUM        100      
 #define MAX_FOG_NUM        100
-
 #define MAX_UAV_NUM         512
-
 #define MAX_UAV_PRICE_NUM    64
-
 #define MAX_GOODS_NUM       256
+#define MAX_PATH_LENGTH     600
 
 
-
-typedef enum _UAV_STATUS_
+enum UAV_STATUS
 {
     UAV_NOMAL = 0,
     UAV_CRASH,
     UAV_FOG
-}UAV_STATUS;
+};
 
-typedef enum _UAV_ACTION_
+enum UAV_ACTION
 { 
 	UAV_STANDBY = 0, 
 	UAV_MOVING, 
-	UAV_INPARKING,
 	UAV_CATCHING,
 	UAV_DELIVERYING
-} UAV_ACTION;
+};
 
-typedef struct _UAV_
+struct UAV
 {
     int     nNO;
     char    szType[8];
-
-    //int     nX;
-    //int     nY;
-    //int     nZ;
 	Point3 nPos;
-
     int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
 	UAV_STATUS  nStatus;
     int     nGoodsNo;
+	// 自定义数据
 	Point3 nTarget;
-	UAV_ACTION nAction = UAV_ACTION::UAV_INPARKING;
+	UAV_ACTION nAction = UAV_ACTION::UAV_STANDBY;
 	int nPathLength = 0;
 	int nCurrentPathIndex = 0;
 	vector<Point3> nPath;
 	bool nIsCrash = false;
 	bool nIsMoved = false;
 	bool nIsGetPath = false;
-}UAV;
+	int nGoodsTarget = -1;
+};
 
-
-typedef struct _UAV_PRICE_
+struct UAV_PRICE
 {
     char    szType[8];
     int     nLoadWeight;
     int     nValue;
-}UAV_PRICE;
+};
 
 /** @struct
  * 	@brief	
  *	@note
  */
-typedef struct _MAP_INFO_
+struct MAP_INFO
 {
     int     nMapX;
     int     nMapY;
     int     nMapZ;
 
-    //int     nParkingX;
-    //int     nParkingY;
 	Point3 nParkingPos;
 
     int     nHLow;
@@ -152,38 +140,40 @@ typedef struct _MAP_INFO_
     UAV     astUav[MAX_UAV_NUM];
     int     nUavPriceNum;
     UAV_PRICE   astUavPrice[MAX_UAV_PRICE_NUM];
-}MAP_INFO;
+};
 
 
-typedef struct _FLAY_PLANE_
+struct FLAY_PLANE
 {
     int     nUavNum;
     UAV     astUav[MAX_UAV_NUM];
 
     int     nPurchaseNum;
     char    szPurchaseType[MAX_UAV_PRICE_NUM][8];
-}FLAY_PLANE;
+};
 
-typedef struct _GOODS_
+struct GOODS
 {
     int     nNO;
 
-    //int     nStartX;
-    //int     nStartY;
 	Point3 nStartPos;
-    //int     nEndX;
-    //int     nEndY;
 	Point3 nEndPos;
 
     int     nWeight;
     int     nValue;
     int     nStartTime;
     int     nRemainTime;
+	int     nLeftTime;
     int     nState;
-	int     nCatchedUavNo = -1;
-}GOODS;
+};
 
-typedef struct _MATCH_STATUS_
+struct GOODSSTATUS
+{
+	int     nCatchedUavNo = -1;
+	bool    nIsNotCatchedInTime = false;
+};
+
+struct MATCH_STATUS
 {
     int     nTime;
     int     nMacthStatus;
@@ -195,7 +185,7 @@ typedef struct _MATCH_STATUS_
     int     nEnemyValue;
     int     nGoodsNum;
     GOODS   astGoods[MAX_GOODS_NUM];
-}MATCH_STATUS;
+};
 
 /** @fn     int ParserConnect(char *pBuffer, CONNECT_NOTICE *pstNotice)
  *  @brief	

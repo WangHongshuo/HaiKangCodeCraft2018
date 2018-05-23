@@ -2,6 +2,7 @@
 
 AStar::AStar()
 {
+	area.reserve(400);
 }
 
 
@@ -15,7 +16,6 @@ void AStar::setMapAndPoint(vector<vector<vector<int>>>* _map, const Point3 & _p1
 	map = _map;
 	from = _p1;
 	to = _p2;
-
 }
 
 bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
@@ -94,6 +94,7 @@ SearchArea::SearchArea(const Point3 & _parentPoint, Point3 * _to, vector<vector<
 	mapX = _map->size();
 	mapY = (*_map)[0].size();
 	isDeadPath = false;
+	area.reserve(8);
 	getAreaPoints();
 	getNextPoint();
 }
@@ -107,6 +108,7 @@ void SearchArea::setParameters(const Point3 & _parentPoint, Point3 * _to, vector
 	mapX = _map->size();
 	mapY = (*_map)[0].size();
 	isDeadPath = false;
+	area.reserve(8);
 	getAreaPoints();
 	getNextPoint();
 }
