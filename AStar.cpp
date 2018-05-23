@@ -125,8 +125,11 @@ void SearchArea::getAreaPoints()
 			_tmpPoint.y += j;
 			if (isValidPoint(_tmpPoint))
 			{
-				if (_tmpPoint == parentPoint || getMarkInMap(*map,_tmpPoint) == PATHMARK)
+				if (_tmpPoint == parentPoint || getMarkInMap(*map, _tmpPoint) == PATHMARK)
+				{
+					_tmpPoint = parentPoint;
 					continue;
+				}
 				else
 				{
 					_tmpSearchPoint.setParameters(_tmpPoint, to);

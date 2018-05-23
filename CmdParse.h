@@ -108,6 +108,7 @@ struct UAV
 	bool nIsMoved = false;
 	bool nIsGetPath = false;
 	int nGoodsTarget = -1;
+	int nLastPosMapMark = -1;
 };
 
 struct UAV_PRICE
@@ -170,7 +171,6 @@ struct GOODS
 struct GOODSSTATUS
 {
 	int     nCatchedUavNo = -1;
-	bool    nIsNotCatchedInTime = false;
 };
 
 struct MATCH_STATUS
