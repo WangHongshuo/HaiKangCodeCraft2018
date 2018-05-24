@@ -149,12 +149,27 @@ void UAVAI::fillArea(vector<vector<vector<int>>>& _Array, const Point3 & _p1, co
 
 void UAVAI::moving(UAV & _uav)
 {
+	Point3 _tmpPoint;
 	// check pos
 	if (_uav.nCurrentPathIndex < _uav.nPathLength - 1)
 	{
 		// if there is something in the next position, stop moving action
 		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
 			return;
+		// check goods status
+		if (_uav.nAction == UAV_ACTION::UAV_CATCHING)
+		{
+			for (int i = 0; i < match->nGoodsNum; i++)
+			{
+				if (match->astGoods[i].nNO == _uav.nGoodsTarget)
+				{
+					if (match->astGoods[i].nState != 0)
+					{
+						clearUavPath(_uav);
+					}
+				}
+			}
+		}
 		// restore uav's last position map mark
 		setMapValue(statusMap, _uav.nPos, _uav.nLastPosMapMark);
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
