@@ -109,6 +109,7 @@ struct UAV
 	bool nIsGetPath = false;
 	int nGoodsTarget = -1;
 	int nLastPosMapMark = -1;
+	Point3 nLastPos;
 };
 
 struct UAV_PRICE

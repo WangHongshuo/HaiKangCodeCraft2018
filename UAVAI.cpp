@@ -25,8 +25,8 @@ void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLAY_PLANE *_flayPlane
 		match->astWeUav[i].nGoodsTarget = -1;
 		match->astWeUav[i].nPath.reserve(MAX_PATH_LENGTH);
 		match->astWeUav[i].nLastPosMapMark = AREA_OBJ::IS_NULL;
-		goodsStatus.resize(MAX_GOODS_NUM);
 	}
+	goodsStatus.resize(MAX_GOODS_NUM);
 }
 
 void UAVAI::initMap()
@@ -83,6 +83,22 @@ void UAVAI::setInitUavTarget()
 
 void UAVAI::getNextAction()
 {
+	// init uav nLastPos
+	if (match->nTime == 1)
+	{
+		initUavLastPos();
+	}
+
+	// set enemy uav pos marks
+	for (int i = 0; i < match->nUavEnemyNum; i++)
+	{
+		if (match->astEnemyUav[i].nStatus == UAV_STATUS::UAV_FOG)
+			continue;
+		if (getMapValue(statusMap, match->astEnemyUav[i].nPos) >= 1000)
+			continue;
+		setMapValue(statusMap, match->astEnemyUav[i].nPos, match->astEnemyUav[i].nNO + 1000);
+	}
+
 	// check uav is alive or not
 	UAVNum = match->nUavWeNum;
 	for (int i = 0; i < match->nUavWeNum; i++)
@@ -92,7 +108,7 @@ void UAVAI::getNextAction()
 		if (match->astWeUav[i].nStatus == UAV_STATUS::UAV_CRASH)
 		{
 			match->astWeUav[i].nIsCrash = true;
-			setMapValue(statusMap, match->astWeUav[i].nPos, AREA_OBJ::IS_NULL);
+			setMapValue(statusMap, match->astWeUav[i].nPos, match->astWeUav[i].nLastPosMapMark);
 			continue;
 		}
 	}
@@ -117,6 +133,22 @@ void UAVAI::getNextAction()
 	UAVAliveNum = planIndex;
 	plan->nUavNum = UAVAliveNum;
 	plan->nPurchaseNum = 0;
+
+	// remove enemy uav pos marks
+	for (int i = 0; i < match->nUavEnemyNum; i++)
+	{
+		if (match->astEnemyUav[i].nStatus == UAV_STATUS::UAV_FOG)
+			continue;
+		setMapValue(statusMap, match->astEnemyUav[i].nPos, AREA_OBJ::IS_NULL);
+	}
+}
+
+void UAVAI::initUavLastPos()
+{
+	for (int i = 0; i < MAX_UAV_NUM; i++)
+	{
+		match->astWeUav[i].nLastPos = match->astWeUav[0].nPos;
+	}
 }
 
 void UAVAI::copyUav(const UAV & _src, UAV & _dst)
@@ -166,12 +198,14 @@ void UAVAI::moving(UAV & _uav)
 					if (match->astGoods[i].nState != 0)
 					{
 						clearUavPath(_uav);
+						return;
 					}
 				}
 			}
 		}
 		// restore uav's last position map mark
 		setMapValue(statusMap, _uav.nPos, _uav.nLastPosMapMark);
+		_uav.nLastPos = _uav.nPos;
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
 		// save uav's next position map mark
 		_uav.nLastPosMapMark = getMapValue(statusMap, _uav.nPos);
@@ -184,6 +218,7 @@ void UAVAI::moving(UAV & _uav)
 		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
 			return;
 		setMapValue(statusMap, _uav.nPos, _uav.nLastPosMapMark);
+		_uav.nLastPos = _uav.nPos;
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
 		_uav.nLastPosMapMark = getMapValue(statusMap, _uav.nPos);
 		setMapValue(statusMap, _uav.nPos, _uav.nNO);
@@ -197,9 +232,9 @@ void UAVAI::moving(UAV & _uav)
 					match->astGoods[i].nState = 1;
 					_uav.nGoodsNo = _uav.nGoodsTarget;
 					clearUavPath(_uav);
-					_uav.nAction = UAV_ACTION::UAV_DELIVERYING;
 					_uav.nTarget = match->astGoods[i].nEndPos;
 					getPath(_uav);
+					_uav.nAction = UAV_ACTION::UAV_DELIVERYING;
 					break;
 				}
 			}
@@ -263,6 +298,7 @@ void UAVAI::getPath(UAV & _uav)
 		}
 	}
 	_uav.nIsGetPath = true;
+	_uav.nAction = UAV_ACTION::UAV_MOVING;
 }
 
 void UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _path, int &_pathLength)

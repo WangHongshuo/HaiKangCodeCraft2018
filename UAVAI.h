@@ -19,7 +19,7 @@ class UAVAI
 public:
 	UAVAI();
 	~UAVAI();
-	typedef enum _AREA_OBJ_ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL } AREA_OBJ;
+	enum AREA_OBJ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL };
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
@@ -32,11 +32,12 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
-	vector<Point3> tmpPath;
 	vector<vector<vector<int>>> mapArray;
 	vector<vector<vector<int>>> statusMap;
 	vector<GOODSSTATUS> goodsStatus;
 	AStar pathSearcher;
+	// init uav.nLastPos
+	void initUavLastPos();
 	// copy Uav
 	void copyUav(const UAV &_src, UAV &_dst);
 	int getMapValue(const vector<vector<vector<int>>> &_array, const Point3 &_p);
