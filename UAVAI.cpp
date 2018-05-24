@@ -164,7 +164,7 @@ void UAVAI::moving(UAV & _uav)
 		setMapValue(statusMap, _uav.nPos, _uav.nNO);
 		_uav.nCurrentPathIndex++;
 	}
-	else if (_uav.nCurrentPathIndex = _uav.nPathLength - 1)
+	else if (_uav.nCurrentPathIndex == _uav.nPathLength - 1)
 	{
 		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
 			return;
@@ -292,7 +292,6 @@ void UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _p
 bool UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
 {
 	Point3 _tmpFrom = _from;
-	int _lastPathLength = _pathLength;
 	if (_tmpFrom.x == _to.x && _tmpFrom.y == _to.y)
 	{
 		if (_tmpFrom.z == _to.z)
