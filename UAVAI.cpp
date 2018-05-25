@@ -2,6 +2,10 @@
 
 UAVAI::UAVAI()
 {
+	tmpPath.reserve(600);
+	minPath.reserve(600);
+	tmpGoodsPath.reserve(600);
+	minGoodsPath.reserve(600);
 }
 
 UAVAI::~UAVAI()
@@ -258,7 +262,7 @@ void UAVAI::moving(UAV & _uav)
 	}
 }
 
-void UAVAI::getPath(UAV & _uav)
+bool UAVAI::getPath(UAV & _uav)
 {
 	if(_uav.nPathLength > 0)
 		clearUavPath(_uav);
@@ -276,11 +280,19 @@ void UAVAI::getPath(UAV & _uav)
 	// moving
 	if (_uav.nPathLength > 0)
 	{
-		setMinUavHorizontalPath(_uav.nPath[_uav.nPathLength - 1], _uav.nTarget, _uav.nPath, _uav.nPathLength);
+		if(!setMinUavHorizontalPath(_uav.nPath[_uav.nPathLength - 1], _uav.nTarget, _uav.nPath, _uav.nPathLength))
+		{
+			clearUavPath(_uav);
+			return false;
+		}
 	}
 	else
 	{
-		setMinUavHorizontalPath(_uav.nPos, _uav.nTarget, _uav.nPath, _uav.nPathLength);
+		if(!setMinUavHorizontalPath(_uav.nPos, _uav.nTarget, _uav.nPath, _uav.nPathLength))
+		{
+			clearUavPath(_uav);
+			return false;
+		}
 	}
 	// landing
 	if (_uav.nPathLength > 0)
@@ -299,11 +311,13 @@ void UAVAI::getPath(UAV & _uav)
 	}
 	_uav.nIsGetPath = true;
 	_uav.nAction = UAV_ACTION::UAV_MOVING;
+	return true;
 }
 
-void UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _path, int &_pathLength)
+bool UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _path, int &_pathLength)
 {
 	Point3 _tmpPoint;
+	int _lastPathLength = _pathLength;
 	// take off
 	if (_from.x != _to.x || _from.y != _to.y)
 	{
@@ -317,11 +331,21 @@ void UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _p
 	// moving
 	if (_pathLength > 0)
 	{
-		setMinUavHorizontalPath(_path[_pathLength - 1], _to, _path, _pathLength);
+		if(!setMinUavHorizontalPath(_path[_pathLength - 1], _to, _path, _pathLength))
+		{
+			_pathLength = _lastPathLength;
+			_path.resize(_lastPathLength);
+			return false;
+		}
 	}
 	else
 	{
-		setMinUavHorizontalPath(_from, _to, _path, _pathLength);
+		if (!setMinUavHorizontalPath(_from, _to, _path, _pathLength))
+		{
+			_pathLength = _lastPathLength;
+			_path.resize(_lastPathLength);
+			return false;
+		}
 	}
 	// landing
 	if (_pathLength > 0)
@@ -338,6 +362,7 @@ void UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _p
 			setUavVirticalPath(_from, _to, _path, _pathLength);
 		}
 	}
+	return true;
 }
 
 bool UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
@@ -381,16 +406,17 @@ bool UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<
 	}
 }
 
-void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
+bool UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
 {
 	if (_from.x == _to.x && _from.y == _to.y)
 	{
-		return;
+		return true;
 	}
 	int _minPathLength = 999999;
 	int _tmpPathLength;
-	vector<Point3> _minPath;
-	vector<Point3> _tmpPath;
+	bool _isGetValidPath = false;
+	minPath.resize(0);
+	tmpPath.resize(0);
 	Point3 _tmpToPoint;
 	_tmpToPoint.setPoint(_from);
 	// calculate every min path in different z height
@@ -398,15 +424,15 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, ve
 	{
 		// if the two points are not in the same hight
 		_tmpPathLength = 0;
-		_tmpPath.resize(0);
+		tmpPath.resize(0);
 		_tmpToPoint.z = i;
 		// if the virtival path contains barrier 
-		if (!setUavVirticalPath(_from, _tmpToPoint, _tmpPath, _tmpPathLength))
+		if (!setUavVirticalPath(_from, _tmpToPoint, tmpPath, _tmpPathLength))
 		{
 			continue;
 		}
 		// if the path searcher can't get the valid path
-		if (!getHorizontalPath(_tmpToPoint, _to, _tmpToPoint.z, _tmpPath, _tmpPathLength))
+		if (!getHorizontalPath(_tmpToPoint, _to, _tmpToPoint.z, tmpPath, _tmpPathLength))
 		{
 			continue;
 		}
@@ -414,14 +440,20 @@ void UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, ve
 		if (_tmpPathLength < _minPathLength)
 		{
 			_minPathLength = _tmpPathLength;
-			_minPath = _tmpPath;
+			minPath = tmpPath;
+			_isGetValidPath = true;
 		}
 	}
-	_pathLength += _minPathLength;
-	for (int i = 0; i < _minPathLength; i++)
+	if (_isGetValidPath)
 	{
-		_path.push_back(_minPath[i]);
+		_pathLength += _minPathLength;
+		for (int i = 0; i < _minPathLength; i++)
+		{
+			_path.push_back(minPath[i]);
+		}
+		return true;
 	}
+	return false;
 }
 
 bool UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const int & _z, vector<Point3>& _path, int &_pathLength)
@@ -469,7 +501,8 @@ void UAVAI::searchGoods()
 	int _minPathLength, _minUavIndex;
 	int _tmpPathLength;
 	int _goodsNo;
-	vector<Point3> _minPath, _tmpPath;
+	minGoodsPath.resize(0);
+	tmpGoodsPath.resize(0);
 	bool _isGetValidPath = false;
 	for (int i = 0; i < match->nGoodsNum; i++)
 	{
@@ -495,14 +528,16 @@ void UAVAI::searchGoods()
 				continue;
 
 			_tmpPathLength = 0;
-			_tmpPath.resize(0);
-			getPath(match->astWeUav[j].nPos, match->astGoods[i].nStartPos, _tmpPath, _tmpPathLength);
+			tmpGoodsPath.resize(0);
+			// if can't get path
+			if (!getPath(match->astWeUav[j].nPos, match->astGoods[i].nStartPos, tmpGoodsPath, _tmpPathLength))
+				continue;
 			if (_tmpPathLength == 0)
 				continue;
 			if (_tmpPathLength < _minPathLength)
 			{
 				_minPathLength = _tmpPathLength;
-				_minPath = _tmpPath;
+				minGoodsPath = tmpGoodsPath;
 				_minUavIndex = j;
 				_isGetValidPath = true;
 			}
@@ -516,7 +551,7 @@ void UAVAI::searchGoods()
 		match->astWeUav[_minUavIndex].nTarget = match->astGoods[i].nStartPos;
 		match->astWeUav[_minUavIndex].nGoodsTarget = match->astGoods[i].nNO;
 		match->astWeUav[_minUavIndex].nAction = UAV_ACTION::UAV_CATCHING;
-		match->astWeUav[_minUavIndex].nPath = _minPath;
+		match->astWeUav[_minUavIndex].nPath = minGoodsPath;
 		match->astWeUav[_minUavIndex].nIsGetPath = true;
 		match->astWeUav[_minUavIndex].nPathLength = _minPathLength;
 	}

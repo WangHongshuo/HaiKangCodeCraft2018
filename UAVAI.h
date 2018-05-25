@@ -32,6 +32,10 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
+	vector<Point3> tmpPath;
+	vector<Point3> minPath;
+	vector<Point3> tmpGoodsPath;
+	vector<Point3> minGoodsPath;
 	vector<vector<vector<int>>> mapArray;
 	vector<vector<vector<int>>> statusMap;
 	vector<GOODSSTATUS> goodsStatus;
@@ -46,10 +50,10 @@ private:
 	// move action
 	void moving(UAV &_uav);
 	// get uav path vector<Point3>
-	void getPath(UAV &_uav);
-	void getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
+	bool getPath(UAV &_uav);
+	bool getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
 	bool setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
-	void setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
+	bool setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength);
 	bool getHorizontalPath(const Point3 &_from, const Point3 &_to, const int &_z, vector<Point3> &_path, int &_pathLength);
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
 	// clear uav path

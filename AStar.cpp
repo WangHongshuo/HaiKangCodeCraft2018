@@ -2,7 +2,8 @@
 
 AStar::AStar()
 {
-	area.reserve(400);
+	area.reserve(600);
+	markedPoints.reserve(4800);
 }
 
 
@@ -22,7 +23,9 @@ bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
 {
 	lastPathLength = _path.size();
 	area.resize(1);
+	markedPoints.resize(0);
 	area[0].setParameters(from, &to, map);
+	markedPoints.push_back(from);
 	SearchArea _tmpArea;
 	unsigned int _index = 0;
 	while (area[_index].nextPoint != to)
@@ -33,6 +36,7 @@ bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
 			clearPathMarkInMap(_index + 1);
 			return false;
 		}
+		markedPoints.push_back(area[_index].nextPoint);
 		_tmpArea.setParameters(area[_index].nextPoint, &to, map);
 		area.push_back(_tmpArea);
 		_index++;
@@ -59,7 +63,7 @@ void AStar::clearPathMarkInMap(const int &_length)
 	int _mark = -1;
 	for (int i = 0; i < _length; i++)
 	{
-		setMarkInMap(*map, area[i].nextPoint, _mark);
+		setMarkInMap(*map, markedPoints[i], _mark);
 	}
 }
 
@@ -95,6 +99,7 @@ SearchArea::SearchArea(const Point3 & _parentPoint, Point3 * _to, vector<vector<
 	mapY = (*_map)[0].size();
 	isDeadPath = false;
 	area.reserve(8);
+	setMarkInMap(*map, parentPoint, CLOSE_FLAG);
 	getAreaPoints();
 	getNextPoint();
 }
@@ -109,6 +114,7 @@ void SearchArea::setParameters(const Point3 & _parentPoint, Point3 * _to, vector
 	mapY = (*_map)[0].size();
 	isDeadPath = false;
 	area.reserve(8);
+	setMarkInMap(*map, parentPoint, CLOSE_FLAG);
 	getAreaPoints();
 	getNextPoint();
 }
@@ -125,7 +131,7 @@ void SearchArea::getAreaPoints()
 			_tmpPoint.y += j;
 			if (isValidPoint(_tmpPoint))
 			{
-				if (_tmpPoint == parentPoint || getMarkInMap(*map, _tmpPoint) == PATHMARK)
+				if (_tmpPoint == parentPoint || getMarkInMap(*map, _tmpPoint) == CLOSE_FLAG)
 				{
 					_tmpPoint = parentPoint;
 					continue;
@@ -158,7 +164,7 @@ void SearchArea::getNextPoint()
 	if (_isGetPoint)
 	{
 		nextPoint = area[_minDistanceIndex].p;
-		setMarkInMap(*map, nextPoint, PATHMARK);
+		setMarkInMap(*map, nextPoint, CLOSE_FLAG);
 	}
 	else
 	{
