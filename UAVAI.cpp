@@ -214,7 +214,7 @@ void UAVAI::moving(UAV & _uav)
 				_uav.nPos.z += 1;
 			_uav.nPath.resize(0);
 			_uav.nPathLength = 0;
-			_uav.nCurrentPathIndex = 0;
+			_uav.nCurrentPathIndex = -1;
 			getPath(_uav.nPos, _uav.nTarget, _uav.nPath, _uav.nPathLength);
 		}
 		else
