@@ -41,13 +41,14 @@ bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
 		area.push_back(_tmpArea);
 		_index++;
 	}
+	markedPoints.push_back(area[_index].nextPoint);
 	_path.resize(lastPathLength + _index + 1);
 	for (unsigned int i = lastPathLength; i < _path.size(); i++)
 	{
 		_path[i] = area[i - lastPathLength].nextPoint;
 	}
 	_pathLength = _path.size();
-	clearPathMarkInMap(_index + 1);
+	clearPathMarkInMap(_index + 2);
 	return true;
 }
 
