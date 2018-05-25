@@ -110,6 +110,7 @@ struct UAV
 	int nGoodsTarget = -1;
 	int nLastPosMapMark = -1;
 	Point3 nLastPos;
+	int nValue = 0;
 };
 
 struct UAV_PRICE

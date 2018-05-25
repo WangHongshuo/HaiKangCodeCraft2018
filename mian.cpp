@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <time.h>
 #include "OSSocket.h"
 #include "JsonParse.h"
 #include "CmdParse.h"
@@ -319,13 +320,18 @@ int main(int argc, char *argv[])
 	pstAI->initMap();
 	pstAI->setInitUavTarget();
 
+	clock_t clockBegin, clockEnd;
     // 根据服务器指令，不停的接受发送数据
     while (1)
     {
+		cout << "Current step: " << pstMatchStatus->nTime << endl;
         // 进行当前时刻的数据计算, 填充飞行计划结构体，注意：0时刻不能进行移动，即第一次进入该循环时
         if (pstMatchStatus->nTime != 0)
         {
+			clockBegin = clock();
             AlgorithmCalculationFun(pstAI);
+			clockEnd = clock();
+			cout << "Cost Time: " << clockEnd - clockBegin << endl;
         }
 
         //发送飞行计划结构体
@@ -341,7 +347,7 @@ int main(int argc, char *argv[])
             return nRet;
         }
 
-        printf("%s\n", pSendBuffer);
+        //printf("%s\n", pSendBuffer);
 
         // 接受当前比赛状态
         memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);

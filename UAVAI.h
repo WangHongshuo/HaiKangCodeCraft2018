@@ -28,6 +28,7 @@ private:
 	int money = 0;
 	int UAVAliveNum = -1;
 	int UAVNum = -1;
+	int initUavValueNum = 0;
 	bool isInitPtr = false;
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
@@ -48,7 +49,11 @@ private:
 	void setMapValue(vector<vector<vector<int>>> &_array, const Point3 &_p, int _v);
 	void fillArea(vector<vector<vector<int>>> &_Array, const Point3 &_p1, const Point3 &_p2, int _fill);
 	// move action
+	void resetUavMovedFlag();
 	void moving(UAV &_uav);
+	void moveAllUavByAction(UAV_ACTION _action, int &_uavNum);
+	// environment-aware
+	void environmentAware(UAV &_uav);
 	// get uav path vector<Point3>
 	bool getPath(UAV &_uav);
 	bool getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
@@ -58,8 +63,10 @@ private:
 	Point3 getHorizontalMoveDirection(const Point3 &_from, const Point3 &_to);
 	// clear uav path
 	void clearUavPath(UAV &_uav);
-	// get money
-
+	// buy new uav
+	void buyNewUav();
+	void initUavValue();
+	int getUavValue(UAV &_uav);
 	// search goods
 	void searchGoods();
 };
