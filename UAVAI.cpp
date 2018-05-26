@@ -104,8 +104,6 @@ void UAVAI::getNextAction()
 	{
 		if (match->astEnemyUav[i].nStatus == UAV_STATUS::UAV_FOG)
 			continue;
-		if (getMapValue(statusMap, match->astEnemyUav[i].nPos) >= 1000)
-			continue;
 		setMapValue(statusMap, match->astEnemyUav[i].nPos, match->astEnemyUav[i].nNO + 1000);
 	}
 
@@ -136,9 +134,10 @@ void UAVAI::getNextAction()
 	{
 		if (match->astWeUav[i].nIsCrash)
 			continue;
-		copyUav(match->astWeUav[i], plan->astUav[i]);
+		copyUav(match->astWeUav[i], plan->astUav[UAVAliveNum]);
 		UAVAliveNum++;
 	}
+	cout << "Available money: " << money << endl;
 	plan->nUavNum = UAVAliveNum;
 
 	buyNewUav();
@@ -212,6 +211,7 @@ void UAVAI::moving(UAV & _uav)
 			// take off or landing action
 			if (_uav.nPath[_uav.nCurrentPathIndex].z != _uav.nPos.z)
 			{
+				// standby
 				_uav.nCurrentPathIndex--;
 				return;
 			}
@@ -551,7 +551,18 @@ void UAVAI::clearUavPath(UAV & _uav)
 void UAVAI::buyNewUav()
 {
 	int _purchaseNum = 0;
-
+	if (UAVAliveNum <= map->nMapX / 2)
+	{
+		for (int i = 0; i < map->nUavPriceNum; i++)
+		{
+			if (map->astUavPrice[i].nValue < money)
+			{
+				strcpy(plan->szPurchaseType[_purchaseNum], map->astUavPrice[i].szType);
+				_purchaseNum++;
+				money -= map->astUavPrice[i].nValue;
+			}
+		}
+	}
 	plan->nPurchaseNum = _purchaseNum;
 }
 
