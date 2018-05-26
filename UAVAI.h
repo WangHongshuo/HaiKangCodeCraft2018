@@ -33,6 +33,7 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
+	Point3 tmpPoint;
 	vector<Point3> tmpPath;
 	vector<Point3> minPath;
 	vector<Point3> tmpGoodsPath;
