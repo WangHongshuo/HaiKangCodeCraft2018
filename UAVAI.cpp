@@ -71,7 +71,7 @@ void UAVAI::setInitUavTarget()
 {
 	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
-	_center.setPoint(map->nMapX / 2, map->nMapY / 2, map->nHLow);
+	_center.setPoint(map->nMapX / 2, map->nMapY / 2, (map->nHLow + map->nHHigh) / 2);
 	match->astWeUav[0].nTarget = _center;
 	getPath(match->astWeUav[0]);
 	match->astWeUav[0].nAction = UAV_ACTION::UAV_MOVING;
@@ -237,9 +237,15 @@ void UAVAI::moving(UAV & _uav)
 			{
 				if (match->astGoods[i].nNO == _uav.nGoodsTarget)
 				{
-					if (match->astGoods[i].nState != 0)
+					tmpPoint = match->astGoods[i].nStartPos;
+					tmpPoint.z = map->nHLow - 1;
+					if (match->astGoods[i].nState != 0 || 
+						getMapValue(statusMap,tmpPoint) >=0)
 					{
+						tmpPoint.z = (map->nHHigh + map->nHLow) / 2;
 						clearUavPath(_uav);
+						_uav.nTarget = tmpPoint;
+						getPath(_uav);
 						return;
 					}
 				}
