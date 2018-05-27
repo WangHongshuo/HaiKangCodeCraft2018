@@ -20,6 +20,8 @@ public:
 	UAVAI();
 	~UAVAI();
 	enum AREA_OBJ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL };
+	enum MOVE_ACTION { M_STANDBY, M_NEWPATH, M_NORMAL, M_MOVE_ALLY };
+	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL};
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
@@ -29,7 +31,11 @@ private:
 	int UAVAliveNum = -1;
 	int UAVNum = -1;
 	int initUavValueNum = 0;
+	int tmpMark = -1;
+	int moveAction = -1;
+	int uavMoveDirection = -1;
 	bool isInitPtr = false;
+	UAV *uavAlly = NULL;
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
@@ -53,8 +59,14 @@ private:
 	void resetUavMovedFlag();
 	void moving(UAV &_uav);
 	void moveAllUavByAction(UAV_ACTION _action, int &_uavNum);
+	void updateWeUavMark(UAV &_uav);
 	// environment-aware
-	void environmentAware(UAV &_uav);
+	int environmentAware(UAV &_uav);
+	int getMoveDirection(UAV &_uav);
+	int isUavInArea(const Point3 &_p);
+	bool isPositionInMap(const Point3 &_p);
+	Point3 getAvailableHorizontalAreaPosisiton(const Point3 &_p);
+	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	// get uav path vector<Point3>
 	bool getPath(UAV &_uav);
 	bool getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
@@ -70,6 +82,7 @@ private:
 	int getUavValue(UAV &_uav);
 	// search goods
 	void searchGoods();
+	void checkNewGoods();
 };
 
 #endif // !__UAVAI_H__

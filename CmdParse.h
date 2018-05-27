@@ -87,7 +87,8 @@ enum UAV_ACTION
 	UAV_STANDBY = 0, 
 	UAV_MOVING, 
 	UAV_CATCHING,
-	UAV_DELIVERYING
+	UAV_DELIVERYING,
+	UAV_ATTACK
 };
 
 struct UAV
@@ -111,6 +112,7 @@ struct UAV
 	int nLastPosMapMark = -1;
 	Point3 nLastPos;
 	int nValue = 0;
+	int nAttackTarget = 0;
 };
 
 struct UAV_PRICE
