@@ -31,7 +31,7 @@ private:
 	int UAVAliveNum = -1;
 	int UAVNum = -1;
 	int initUavValueNum = 0;
-	int tmpMark = -1;
+	int tmpMark = -1; // @ in environmentAware();
 	int moveAction = -1;
 	int uavMoveDirection = -1;
 	bool isInitPtr = false;
@@ -39,11 +39,15 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLAY_PLANE *plan = NULL;
-	Point3 tmpPoint;
-	vector<Point3> tmpPath;
-	vector<Point3> minPath;
-	vector<Point3> tmpGoodsPath;
-	vector<Point3> minGoodsPath;
+	Point3 tmpPoint_1; // @ in moving();
+	Point3 tmpPoint_2; // @ in moving();
+	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
+	Point3 tmpPoint_4; // @ in environmentAware();
+	vector<int> uavNo;
+	vector<Point3> tmpPath; // @ in setMinUavHorizontalPath();
+	vector<Point3> minPath; // @ in setMinUavHorizontalPath();
+	vector<Point3> tmpGoodsPath; // @ in searchGoods();
+	vector<Point3> minGoodsPath; // @ in searchGoods();
 	vector<vector<vector<int>>> mapArray;
 	vector<vector<vector<int>>> statusMap;
 	vector<GOODSSTATUS> goodsStatus;
@@ -63,7 +67,7 @@ private:
 	// environment-aware
 	int environmentAware(UAV &_uav);
 	int getMoveDirection(UAV &_uav);
-	int isUavInArea(const Point3 &_p);
+	int isEnemyUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
 	Point3 getAvailableHorizontalAreaPosisiton(const Point3 &_p);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
