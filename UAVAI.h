@@ -30,6 +30,7 @@ private:
 	int MAX_ALIVE_UAV_NUM;
 	int MAX_ATTACKER_UAV_NUM;
 	int money = 0;
+	int UAVValues = 0;
 	int UAVAliveNum = 0;
 	int UAVAttackerNum = 0;
 	int UAVNum = -1;

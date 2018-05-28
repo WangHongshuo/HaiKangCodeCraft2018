@@ -117,6 +117,7 @@ void UAVAI::setInitUavTarget()
 
 void UAVAI::getNextAction()
 {
+	UAVValues = 0;
 	// reset uav.isMoved flag
 	resetUavMovedFlag();
 
@@ -174,10 +175,12 @@ void UAVAI::getNextAction()
 	{
 		if (match->astWeUav[i].nIsCrash)
 			continue;
+		UAVValues += match->astWeUav[i].nValue;
 		copyUav(match->astWeUav[i], plan->astUav[UAVAliveNum]);
 		UAVAliveNum++;
 	}
-	cout << "Available money: " << money << endl;
+	cout << "Available money: " << money << " " << "Uav values: " << UAVValues << endl;
+	cout << "Value Counts: " << money + UAVValues << endl;
 	plan->nUavNum = UAVAliveNum;
 
 	buyNewUav();
@@ -639,6 +642,21 @@ int UAVAI::environmentAware(UAV & _uav)
 					updateWeUavMark(*uavAlly);
 				}
 				return MOVE_ACTION::M_NORMAL;
+			}
+			else if (uavAlly->nAction == UAV_ACTION::UAV_ATTACK)
+			{
+				if (uavAlly->nPathLength == 0)
+				{
+					tmpPoint_4 = getAvailableHorizontalAreaPosisiton(uavAlly->nPos);
+					uavAlly->nPos = tmpPoint_4;
+					uavAlly->nIsMoved = true;
+					updateWeUavMark(*uavAlly);
+					return MOVE_ACTION::M_NORMAL;
+				}
+				else
+				{
+					return MOVE_ACTION::M_STANDBY;
+				}
 			}
 			else
 			{
