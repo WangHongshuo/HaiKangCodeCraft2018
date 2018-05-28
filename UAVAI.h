@@ -27,12 +27,16 @@ public:
 	void setInitUavTarget();
 	void getNextAction();
 private:
+	int MAX_ALIVE_UAV_NUM;
+	int MAX_ATTACKER_UAV_NUM;
 	int money = 0;
-	int UAVAliveNum = -1;
+	int UAVAliveNum = 0;
+	int UAVAttackerNum = 0;
 	int UAVNum = -1;
 	int initUavValueNum = 0;
 	int tmpMark = -1; // @ in environmentAware();
 	int moveAction = -1;
+	int cheapestUavIndex = 0;
 	int uavMoveDirection = -1;
 	bool isInitPtr = false;
 	UAV *uavAlly = NULL;
@@ -86,7 +90,9 @@ private:
 	int getUavValue(UAV &_uav);
 	// search goods
 	void searchGoods();
-	void checkNewGoods();
+	bool isGetBetterGoods(UAV &_uav, GOODS &_goods);
+	// attacker
+	void setAttackTarget();
 };
 
 #endif // !__UAVAI_H__

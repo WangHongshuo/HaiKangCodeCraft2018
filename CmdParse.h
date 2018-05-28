@@ -67,8 +67,8 @@ struct FOG
 };
 
 
-#define MAX_BUILDING_NUM        100      
-#define MAX_FOG_NUM        100
+#define MAX_BUILDING_NUM        128      
+#define MAX_FOG_NUM        128
 #define MAX_UAV_NUM         512
 #define MAX_UAV_PRICE_NUM    64
 #define MAX_GOODS_NUM       256
@@ -89,6 +89,13 @@ enum UAV_ACTION
 	UAV_CATCHING,
 	UAV_DELIVERYING,
 	UAV_ATTACK
+};
+
+enum ATTACK_TYPE
+{
+	AT_NULL = 0,
+	AT_HOME,
+	AT_UAV
 };
 
 struct UAV
@@ -113,6 +120,7 @@ struct UAV
 	Point3 nLastPos;
 	int nValue = 0;
 	int nAttackTarget = 0;
+	int nAttackType = ATTACK_TYPE::AT_NULL;
 };
 
 struct UAV_PRICE
@@ -175,6 +183,7 @@ struct GOODS
 struct GOODSSTATUS
 {
 	int     nCatchedUavNo = -1;
+	vector<bool> nIsRejectUav;
 };
 
 struct MATCH_STATUS
