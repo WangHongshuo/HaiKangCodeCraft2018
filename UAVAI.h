@@ -48,6 +48,7 @@ private:
 	Point3 tmpPoint_2; // @ in moving();
 	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
 	Point3 tmpPoint_4; // @ in environmentAware();
+	Point3 enemyParkingPos;
 	vector<int> uavNo;
 	vector<Point3> tmpPath; // @ in setMinUavHorizontalPath();
 	vector<Point3> minPath; // @ in setMinUavHorizontalPath();

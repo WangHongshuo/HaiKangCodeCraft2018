@@ -127,6 +127,8 @@ void UAVAI::getNextAction()
 	if (match->nTime == 1)
 	{
 		initUavLastPos();
+		enemyParkingPos = match->astEnemyUav[0].nPos;
+		enemyParkingPos.z = 0;
 	}
 
 	// set enemy uav pos marks
@@ -1163,3 +1165,4 @@ bool UAVAI::isGetBetterGoods(UAV & _uav, GOODS & _goods)
 	}
 
 }
+
