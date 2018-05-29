@@ -86,6 +86,18 @@ void UAVAI::setInitUavTarget()
 	// set init target as the center of map (whatever the target obj is)
 	Point3 _center, _tP;
 	_center.setPoint(map->nMapX / 2, map->nMapY / 2, (map->nHLow + map->nHHigh) / 2);
+	while (getMapValue(statusMap, _center) <= -4)
+	{
+		_center.z += 1;
+		if (_center.z >= map->nHHigh)
+			break;
+	}
+	while (getMapValue(statusMap, _center) <= -4)
+	{
+		_center.x += 1;
+		if (_center.x >= map->nMapX - 1)
+			break;
+	}
 	match->astWeUav[0].nTarget = _center;
 	getPath(match->astWeUav[0]);
 	match->astWeUav[0].nAction = UAV_ACTION::UAV_MOVING;
