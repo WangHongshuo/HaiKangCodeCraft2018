@@ -149,6 +149,7 @@ void UAVAI::getNextAction()
 			UAVAttackerNum++;
 	}
 
+	setAttackTarget();
 	// search goods
 	searchGoods();
 
@@ -287,6 +288,7 @@ void UAVAI::moving(UAV & _uav)
 						clearUavPath(_uav);
 						_uav.nTarget = tmpPoint_2;
 						getPath(_uav);
+						updateWeUavMark(_uav);
 						return;
 					}
 					break;
@@ -1083,11 +1085,12 @@ void UAVAI::buyNewUav()
 				continue;
 			if (!getPath(map->nParkingPos, match->astGoods[i].nStartPos, tmpGoodsPath, _tmpPathLen))
 				continue;
-			if (_tmpPathLen > match->astGoods[i].nRemainTime)
+			if (_tmpPathLen > match->astGoods[i].nLeftTime)
 			{
 				goodsStatus[_goodsNo].isRejectedByHome = true;
 				continue;
 			}
+
 			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
 				(double(_goods->nValue) / double(_goods->nWeight));
 
@@ -1228,7 +1231,7 @@ void UAVAI::searchGoods()
 				goodsStatus[_goodsNo].nIsRejectUav[i] = true;
 				continue;
 			}
-			if (_tmpPathLen > _goods->nRemainTime || _tmpPathLen <= 0)
+			if (_tmpPathLen > _goods->nLeftTime || _tmpPathLen <= 0)
 			{
 				goodsStatus[_goodsNo].nIsRejectUav[i] = true;
 				continue;
@@ -1276,4 +1279,24 @@ int UAVAI::getGoodsIndexByNo(int _No)
 			return i;
 	}
 	return -1;
+}
+
+void UAVAI::setAttackTarget()
+{
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		if (match->astWeUav[i].nIsCrash)
+			continue;
+		if (match->astWeUav[i].nAction != UAV_ACTION::UAV_ATTACK)
+			continue;
+		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_NULL)
+		{
+			match->astWeUav[i].nAttackType = ATTACK_TYPE::AT_HOME;
+			match->astWeUav[i].nTarget = enemyParkingPos;
+			match->astWeUav[i].nTarget.z = map->nHLow - 1;
+			match->astWeUav[i].nCurrentPathIndex = -1;
+			match->astWeUav[i].nPathLength = 0;
+			getPath(match->astWeUav[i]);
+		}
+	}
 }
