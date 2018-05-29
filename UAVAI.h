@@ -75,7 +75,7 @@ private:
 	int getMoveDirection(UAV &_uav);
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
-	Point3 getAvailablelAreaPosisiton(const Point3 &_p);
+	Point3 getAvailablelAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);
 	// get uav path vector<Point3>
@@ -95,7 +95,6 @@ private:
 	// search goods
 	void searchGoods();
 	int getGoodsIndexByNo(int _No);
-	bool isGetBetterGoods(UAV &_uav, GOODS &_goods);
 	// attacker
 	void setAttackTarget();
 };

@@ -185,6 +185,7 @@ struct GOODSSTATUS
 {
 	int     nCatchedUavNo = -1;
 	vector<bool> nIsRejectUav;
+	bool isRejectedByHome = false;
 };
 
 struct MATCH_STATUS

@@ -367,7 +367,8 @@ void UAVAI::updateWeUavMark(UAV & _uav)
 {
 	if (!_uav.nIsUpdateMapMark)
 	{
-		setMapValue(statusMap, _uav.nLastPos, _uav.nLastPosMapMark);
+		if(getMapValue(statusMap,_uav.nLastPos) == _uav.nNO)
+			setMapValue(statusMap, _uav.nLastPos, _uav.nLastPosMapMark);
 		_uav.nLastPos = _uav.nPos;
 		_uav.nLastPosMapMark = getMapValue(statusMap, _uav.nPos);
 		if (_uav.nLastPosMapMark != AREA_OBJ::IS_NULL && _uav.nLastPosMapMark != AREA_OBJ::IS_FOG)
@@ -452,7 +453,7 @@ bool UAVAI::isPositionInMap(const Point3 & _p)
 	return true;
 }
 
-Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p)
+Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p, UAV &_uav)
 {
 	Point3 _tmp = _p;
 	int _tmpMark;
@@ -462,31 +463,31 @@ Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p)
 		{
 			for (int j = -1; j <= 1; j++)
 			{
+				_tmp = _p;
 				_tmp.x += i;
 				_tmp.y += j;
-				if (!isPositionInMap(_tmp))
-				{
-					_tmp = _p;
+				if (_tmp == _p)
 					continue;
-				}
+				if (_tmp == _uav.nLastPos)
+					continue;
+				if (!isPositionInMap(_tmp))
+					continue;
 				_tmpMark = getMapValue(statusMap, _tmp);
 				if  (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
 					return _tmp;
-				else
-					_tmp = _p;
 			}
 		}
 	}
 	_tmp = _p;
 	_tmp.z += 1;
-	if (_tmp.z <= map->nHHigh)
+	if (_tmp.z <= map->nHHigh && _tmp != _uav.nLastPos)
 	{
 		_tmpMark = getMapValue(statusMap, _tmp);
 		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
 			return _tmp;
 	}
 	_tmp.z -= 2;
-	if (_tmp.z >= 0)
+	if (_tmp.z >= 0 && _tmp != _uav.nLastPos)
 	{
 		_tmpMark = getMapValue(statusMap, _tmp);
 		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
@@ -563,7 +564,7 @@ int UAVAI::environmentAware(UAV & _uav)
 					}
 					else
 					{
-						tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos);
+						tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
 						_uav.nPos = tmpPoint_4;
 						updateWeUavMark(_uav);
 						return -1;
@@ -616,7 +617,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos);
+					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -632,7 +633,7 @@ int UAVAI::environmentAware(UAV & _uav)
 						uavAlly->nPos == _uav.nPath[_uav.nCurrentPathIndex])
 					{
 						uavAlly->nIsMoved = true;
-						tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos);
+						tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
 						uavDodgeAndGetNewPath(*uavAlly, tmpPoint_4);
 						return MOVE_ACTION::M_NORMAL;
 					}
@@ -663,7 +664,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos);
+					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
 					// if can't find dodge position, upward
 					if (tmpPoint_4 == uavAlly->nPos)
 					{
@@ -702,7 +703,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos);
+					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -713,7 +714,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			{
 				if (uavAlly->nPathLength == 0)
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos);
+					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -726,7 +727,9 @@ int UAVAI::environmentAware(UAV & _uav)
 			}
 			else
 			{
-				return MOVE_ACTION::M_STANDBY;
+				tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
+				uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+				return MOVE_ACTION::M_NEWPATH;
 			}
 		}
 		
@@ -736,12 +739,14 @@ int UAVAI::environmentAware(UAV & _uav)
 	{
 		UAV *_otherUav = NULL;
 		_uavNum = isUavInArea(_uav.nPath[_uav.nCurrentPathIndex], uavNo);
-		if (_uavNum > 0)
+		if (_uavNum > 1)
 		{
 			for (int i = 0; i < _uavNum; i++)
 			{
 				if (uavNo[i] < 1000)
 				{
+					if (uavNo[i] == _uav.nNO)
+						continue;
 					_otherUav = &(match->astWeUav[uavNo[i]]);
 					if (_otherUav->nAction == UAV_ACTION::UAV_STANDBY)
 					{
@@ -1039,16 +1044,34 @@ void UAVAI::buyNewUav()
 {
 	int _purchaseNum = 0;
 	int _goodsNo = -1;
-	int _tmpPathLen;
+	int _tmpPathLen, _bestPathLen, _bestGoodsNo, _bestGoodsIndex;
 	int _buyUavIndex;
+	double _maxSocres, _tmpScores;
+	bool _isGetValidPath = false;
+	GOODS *_goods = NULL;
+	if (money < map->astUavPrice[cheapestUavIndex].nValue)
+	{
+		plan->nPurchaseNum = 0;
+		return;
+	}
 	if (UAVAliveNum <= MAX_ALIVE_UAV_NUM)
 	{
+		_maxSocres = -1;
+		_tmpScores = 0;
+		minGoodsPath.resize(0);
+		_bestPathLen = 0;
+		_bestGoodsNo = -1;
+		_bestGoodsIndex = -1;
+
 		for (int i = 0; i < match->nGoodsNum; i++)
 		{
 			tmpGoodsPath.resize(0);
-			_buyUavIndex = -1;
 			_tmpPathLen = 0;
 			_goodsNo = match->astGoods[i].nNO;
+			_goods = &(match->astGoods[i]);
+
+			if (goodsStatus[_goodsNo].isRejectedByHome)
+				continue;
 			if (goodsStatus[_goodsNo].nCatchedUavNo != -1)
 				continue;
 			if (match->astGoods[i].nState != 0)
@@ -1056,20 +1079,39 @@ void UAVAI::buyNewUav()
 			if (!getPath(map->nParkingPos, match->astGoods[i].nStartPos, tmpGoodsPath, _tmpPathLen))
 				continue;
 			if (_tmpPathLen > match->astGoods[i].nRemainTime)
+			{
+				goodsStatus[_goodsNo].isRejectedByHome = true;
 				continue;
-			_buyUavIndex = getBuyNewUavIndex(match->astGoods[i]);
-			if (_buyUavIndex < 0)
-				continue;
+			}
+			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
+				(double(_goods->nValue) / double(_goods->nWeight));
+
+			if (_tmpScores > _maxSocres)
+			{
+				minGoodsPath = tmpGoodsPath;
+				_bestPathLen = _tmpPathLen;
+				_isGetValidPath = true;
+				_bestGoodsNo = _goodsNo;
+				_bestGoodsIndex = i;
+			}
+		}
+
+		if(_isGetValidPath)
+		{
+			_buyUavIndex = getBuyNewUavIndex(match->astGoods[_bestGoodsIndex]);
 			if (map->astUavPrice[_buyUavIndex].nValue < money)
 			{
 				strcpy(plan->szPurchaseType[_purchaseNum], map->astUavPrice[_buyUavIndex].szType);
 				match->astWeUav[UAVNum + _purchaseNum].nAction = UAV_ACTION::UAV_CATCHING;
 				money -= map->astUavPrice[_buyUavIndex].nValue;
-				match->astWeUav[UAVNum + _purchaseNum].nPath = tmpGoodsPath;
-				match->astWeUav[UAVNum + _purchaseNum].nPathLength = _tmpPathLen;
+
+				match->astWeUav[UAVNum + _purchaseNum].nTarget = match->astGoods[_bestGoodsIndex].nStartPos;
+				match->astWeUav[UAVNum + _purchaseNum].nPath = minGoodsPath;
+				match->astWeUav[UAVNum + _purchaseNum].nPathLength = _bestPathLen;
 				match->astWeUav[UAVNum + _purchaseNum].nIsGetPath = true;
 				match->astWeUav[UAVNum + _purchaseNum].nGoodsTarget = _goodsNo;
 				goodsStatus[_goodsNo].nCatchedUavNo = UAVNum + _purchaseNum;
+				goodsStatus[_goodsNo].nIsRejectUav[UAVNum + _purchaseNum] = true;
 				_purchaseNum++;
 			}
 		}
@@ -1230,36 +1272,3 @@ int UAVAI::getGoodsIndexByNo(int _No)
 	}
 	return -1;
 }
-
-bool UAVAI::isGetBetterGoods(UAV & _uav, GOODS & _goods)
-{
-	int _tmpPathLen = 0;
-	int _currentGoodsIndex = getGoodsIndexByNo(_uav.nGoodsTarget);
-	if (_currentGoodsIndex < 0)
-		return false;
-	tmpGoodsPath.resize(0);
-	if(goodsStatus[_goods.nNO].nIsRejectUav[_uav.nNO])
-		return false;
-	if (match->astGoods[_currentGoodsIndex].nValue > _goods.nValue)
-		return false;
-	if (!getPath(_uav.nPos, _goods.nStartPos, tmpGoodsPath, _tmpPathLen))
-		return false;
-	if (_tmpPathLen < _uav.nPathLength - _uav.nCurrentPathIndex)
-		return false;
-	else
-	{
-		// release last uav.nGoodsTarget and set reject
-		goodsStatus[_uav.nGoodsTarget].nIsRejectUav[_uav.nNO] = true;
-		goodsStatus[_uav.nGoodsTarget].nCatchedUavNo = -1;
-
-		goodsStatus[_goods.nNO].nCatchedUavNo = _uav.nNO;
-		_uav.nGoodsTarget = _goods.nNO;
-		_uav.nPathLength = _tmpPathLen;
-		_uav.nPath = tmpGoodsPath;
-		_uav.nCurrentPathIndex = -1;
-		_uav.nIsGetPath = true;
-		return true;
-	}
-
-}
-
