@@ -279,8 +279,8 @@ void UAVAI::moving(UAV & _uav)
 					tmpPoint_2 = match->astGoods[i].nStartPos;
 					tmpPoint_2.z = map->nHLow - 1;
 					if (match->astGoods[i].nState != 0 || 
-						getMapValue(statusMap,tmpPoint_2) >= 1000 || 
-						match->astGoods[i].nLeftTime < _uav.nPathLength - _uav.nCurrentPathIndex)
+					   (getMapValue(statusMap, tmpPoint_2) >= 1000 && _uav.nPos.z >= map->nHLow) ||
+					    match->astGoods[i].nLeftTime < _uav.nPathLength - _uav.nCurrentPathIndex)
 					{
 						goodsStatus[match->astGoods[i].nNO].nIsRejectUav[_uav.nNO] = true;
 						tmpPoint_2.z = map->nHLow + 2;
@@ -534,7 +534,7 @@ int UAVAI::environmentAware(UAV & _uav)
 						return -1;
 					}
 					// if enemy and ally in the same height
-					if (match->astEnemyUav[uavNo[i]].nPos.z == _uav.nPos.z)
+					if (match->astEnemyUav[uavNo[i]%1000].nPos.z == _uav.nPos.z)
 					{
 						if (_uav.nPos.z + 1 <= map->nHHigh)
 						{
@@ -559,8 +559,13 @@ int UAVAI::environmentAware(UAV & _uav)
 								}
 							}
 						}
-						// can do nothing
-						return -1;
+						else
+						{
+							tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
+							_uav.nPos = tmpPoint_4;
+							updateWeUavMark(_uav);
+							return -1;
+						}
 					}
 					else
 					{
@@ -1108,8 +1113,9 @@ void UAVAI::buyNewUav()
 				match->astWeUav[UAVNum + _purchaseNum].nTarget = match->astGoods[_bestGoodsIndex].nStartPos;
 				match->astWeUav[UAVNum + _purchaseNum].nPath = minGoodsPath;
 				match->astWeUav[UAVNum + _purchaseNum].nPathLength = _bestPathLen;
+				match->astWeUav[UAVNum + _purchaseNum].nCurrentPathIndex = -1;
 				match->astWeUav[UAVNum + _purchaseNum].nIsGetPath = true;
-				match->astWeUav[UAVNum + _purchaseNum].nGoodsTarget = _goodsNo;
+				match->astWeUav[UAVNum + _purchaseNum].nGoodsTarget = _bestGoodsNo;
 				goodsStatus[_goodsNo].nCatchedUavNo = UAVNum + _purchaseNum;
 				goodsStatus[_goodsNo].nIsRejectUav[UAVNum + _purchaseNum] = true;
 				_purchaseNum++;
@@ -1173,7 +1179,7 @@ void UAVAI::searchGoods()
 {
 	// Scores = (value / distance) * utilization * (value / weight)
 	double _maxScores, _tmpScores;
-	int _tmpPathLen, _bestGoodsIndex, _lastGoodsIndex ,_goodsNo;
+	int _tmpPathLen, _bestGoodsIndex ,_goodsNo;
 	UAV *_uav = NULL;
 	GOODS *_goods = NULL;
 	bool _isGetValidPath;
@@ -1210,7 +1216,6 @@ void UAVAI::searchGoods()
 			_goodsNo = _goods->nNO;
 			tmpGoodsPath.resize(0);
 			_tmpPathLen = 0;
-			_lastGoodsIndex = -1;
 
 			if (goodsStatus[_goodsNo].nCatchedUavNo != -1)
 				continue;
