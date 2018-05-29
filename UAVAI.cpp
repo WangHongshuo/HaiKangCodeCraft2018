@@ -6,6 +6,7 @@ UAVAI::UAVAI()
 	minPath.reserve(600);
 	tmpGoodsPath.reserve(600);
 	minGoodsPath.reserve(600);
+	availablePoints.reserve(12);
 }
 
 UAVAI::~UAVAI()
@@ -467,9 +468,10 @@ bool UAVAI::isPositionInMap(const Point3 & _p)
 	return true;
 }
 
-Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p, UAV &_uav)
+Point3 UAVAI::getAvailableAreaPosisiton(const Point3 & _p, UAV &_uav)
 {
 	Point3 _tmp = _p;
+	availablePoints.resize(0);
 	int _tmpMark;
 	if (_p.z >= map->nHLow)
 	{
@@ -487,8 +489,8 @@ Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p, UAV &_uav)
 				if (!isPositionInMap(_tmp))
 					continue;
 				_tmpMark = getMapValue(statusMap, _tmp);
-				if  (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
-					return _tmp;
+				if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
+					availablePoints.push_back(_tmp);
 			}
 		}
 	}
@@ -498,16 +500,24 @@ Point3 UAVAI::getAvailablelAreaPosisiton(const Point3 & _p, UAV &_uav)
 	{
 		_tmpMark = getMapValue(statusMap, _tmp);
 		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
-			return _tmp;
+			availablePoints.push_back(_tmp);
 	}
 	_tmp.z -= 2;
 	if (_tmp.z >= 0 && _tmp != _uav.nLastPos)
 	{
 		_tmpMark = getMapValue(statusMap, _tmp);
 		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
-			return _tmp;
+			availablePoints.push_back(_tmp);
 	}
-	return _p;
+	if (availablePoints.size() == 0)
+	{
+		return _p;
+	}
+	else
+	{
+		srand(time(0));
+		return availablePoints[rand() % (availablePoints.size())];
+	}
 }
 
 void UAVAI::uavDodgeAndGetNewPath(UAV & _uav, Point3 & _dodgePosition)
@@ -575,7 +585,7 @@ int UAVAI::environmentAware(UAV & _uav)
 						}
 						else
 						{
-							tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
+							tmpPoint_4 = getAvailableAreaPosisiton(_uav.nPos, _uav);
 							_uav.nPos = tmpPoint_4;
 							updateWeUavMark(_uav);
 							return -1;
@@ -583,7 +593,7 @@ int UAVAI::environmentAware(UAV & _uav)
 					}
 					else
 					{
-						tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
+						tmpPoint_4 = getAvailableAreaPosisiton(_uav.nPos, _uav);
 						_uav.nPos = tmpPoint_4;
 						updateWeUavMark(_uav);
 						return -1;
@@ -636,7 +646,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
+					tmpPoint_4 = getAvailableAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -652,7 +662,7 @@ int UAVAI::environmentAware(UAV & _uav)
 						uavAlly->nPos == _uav.nPath[_uav.nCurrentPathIndex])
 					{
 						uavAlly->nIsMoved = true;
-						tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
+						tmpPoint_4 = getAvailableAreaPosisiton(uavAlly->nPos, *uavAlly);
 						uavDodgeAndGetNewPath(*uavAlly, tmpPoint_4);
 						return MOVE_ACTION::M_NORMAL;
 					}
@@ -683,7 +693,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
+					tmpPoint_4 = getAvailableAreaPosisiton(uavAlly->nPos, *uavAlly);
 					// if can't find dodge position, upward
 					if (tmpPoint_4 == uavAlly->nPos)
 					{
@@ -722,7 +732,7 @@ int UAVAI::environmentAware(UAV & _uav)
 				}
 				else
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
+					tmpPoint_4 = getAvailableAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -733,7 +743,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			{
 				if (uavAlly->nPathLength == 0)
 				{
-					tmpPoint_4 = getAvailablelAreaPosisiton(uavAlly->nPos, *uavAlly);
+					tmpPoint_4 = getAvailableAreaPosisiton(uavAlly->nPos, *uavAlly);
 					uavAlly->nPos = tmpPoint_4;
 					uavAlly->nIsMoved = true;
 					updateWeUavMark(*uavAlly);
@@ -746,7 +756,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			}
 			else
 			{
-				tmpPoint_4 = getAvailablelAreaPosisiton(_uav.nPos, _uav);
+				tmpPoint_4 = getAvailableAreaPosisiton(_uav.nPos, _uav);
 				uavDodgeAndGetNewPath(_uav, tmpPoint_4);
 				return MOVE_ACTION::M_NEWPATH;
 			}

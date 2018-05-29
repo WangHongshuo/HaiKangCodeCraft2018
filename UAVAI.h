@@ -6,6 +6,7 @@
 #include <vector>
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include "CmdParse.h"
 #include "Point3.h"
 #include "AStar.h"
@@ -54,6 +55,7 @@ private:
 	vector<Point3> minPath; // @ in setMinUavHorizontalPath();
 	vector<Point3> tmpGoodsPath; // @ in searchGoods();
 	vector<Point3> minGoodsPath; // @ in searchGoods();
+	vector<Point3> availablePoints; // @ in getAvailableAreaPosisiton
 	vector<vector<vector<int>>> mapArray;
 	vector<vector<vector<int>>> statusMap;
 	vector<GOODSSTATUS> goodsStatus;
@@ -75,7 +77,7 @@ private:
 	int getMoveDirection(UAV &_uav);
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
-	Point3 getAvailablelAreaPosisiton(const Point3 &_p, UAV &_uav);
+	Point3 getAvailableAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);
 	// get uav path vector<Point3>
