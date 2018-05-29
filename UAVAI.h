@@ -75,7 +75,7 @@ private:
 	int getMoveDirection(UAV &_uav);
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
-	Point3 getAvailableHorizontalAreaPosisiton(const Point3 &_p);
+	Point3 getAvailablelAreaPosisiton(const Point3 &_p);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);
 	// get uav path vector<Point3>
