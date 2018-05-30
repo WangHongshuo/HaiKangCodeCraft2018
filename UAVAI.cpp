@@ -41,10 +41,13 @@ void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLAY_PLANE *_flayPlane
 	uavNo.reserve(10);
 	initUavValue();
 	cheapestUavIndex = 0;
+	mostExpensiveUavIndex = 0;
 	for (int i = 1; i < map->nUavPriceNum; i++)
 	{
 		if (map->astUavPrice[i].nValue < map->astUavPrice[cheapestUavIndex].nValue)
 			cheapestUavIndex = i;
+		if (map->astUavPrice[i].nValue > map->astUavPrice[mostExpensiveUavIndex].nValue)
+			mostExpensiveUavIndex = i;
 	}
 	MAX_ALIVE_UAV_NUM = map->nMapX / 2;
 	MAX_ATTACKER_UAV_NUM = 1;
@@ -113,6 +116,16 @@ void UAVAI::setInitUavTarget()
 		match->astWeUav[i].nTarget = match->astWeUav[i].nPath[match->astWeUav[i].nPathLength - 1];
 		_tmp++;
 	}
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		if (!strcmp(match->astWeUav[i].szType, map->astUavPrice[cheapestUavIndex].szType))
+		{
+			match->astWeUav[i].nAction = UAV_ACTION::UAV_ATTACK;
+			UAVAttackerNum++;
+			break;
+		}
+			
+	}
 }
 
 void UAVAI::getNextAction()
@@ -163,6 +176,7 @@ void UAVAI::getNextAction()
 	}
 
 	setAttackTarget();
+	updateAttackTarget();
 	// search goods
 	searchGoods();
 
@@ -1305,6 +1319,8 @@ int UAVAI::getGoodsIndexByNo(int _No)
 
 void UAVAI::setAttackTarget()
 {
+	int _mostValuedEnemyNo = -1;
+	int _mostValued = 0;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
 		if (match->astWeUav[i].nIsCrash)
@@ -1313,12 +1329,50 @@ void UAVAI::setAttackTarget()
 			continue;
 		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_NULL)
 		{
-			match->astWeUav[i].nAttackType = ATTACK_TYPE::AT_HOME;
-			match->astWeUav[i].nTarget = enemyParkingPos;
-			match->astWeUav[i].nTarget.z = map->nHLow - 1;
-			match->astWeUav[i].nCurrentPathIndex = -1;
-			match->astWeUav[i].nPathLength = 0;
-			getPath(match->astWeUav[i]);
+			for (int j = 0; j < match->nUavEnemyNum; j++)
+			{
+				if (match->astEnemyUav[j].nPos.z <= 0)
+					continue;
+				if (_mostValued < getUavValue(match->astEnemyUav[j]))
+				{
+					_mostValued = getUavValue(match->astEnemyUav[j]);
+					_mostValuedEnemyNo = match->astEnemyUav[j].nNO;
+				}
+			}
+			if (_mostValuedEnemyNo >= 0)
+			{
+				match->astWeUav[i].nAttackType = ATTACK_TYPE::AT_UAV;
+				match->astWeUav[i].nAttackTarget = _mostValuedEnemyNo;
+			}
+		}
+	}
+}
+
+void UAVAI::updateAttackTarget()
+{
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		if (match->astWeUav[i].nIsCrash)
+			continue;
+		if (match->astWeUav[i].nAction != UAV_ACTION::UAV_ATTACK)
+			continue;
+		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_UAV)
+		{
+			for (int j = 0; j < match->nUavEnemyNum; j++)
+			{
+				if (match->astEnemyUav[j].nNO == match->astWeUav[i].nAttackTarget)
+				{
+					if (match->astEnemyUav[j].nPos.z != -1)
+					{
+						match->astWeUav[i].nTarget = match->astEnemyUav[j].nPos;
+						getPath(match->astWeUav[i]);
+						return;
+					}
+				}
+			}
+			match->astWeUav[i].nAttackTarget = -1;
+			match->astWeUav[i].nAttackType = ATTACK_TYPE::AT_NULL;
+			return;
 		}
 	}
 }

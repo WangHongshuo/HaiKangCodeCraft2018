@@ -39,6 +39,7 @@ private:
 	int tmpMark = -1; // @ in environmentAware();
 	int moveAction = -1;
 	int cheapestUavIndex = 0;
+	int mostExpensiveUavIndex = 0;
 	int uavMoveDirection = -1;
 	bool isInitPtr = false;
 	UAV *uavAlly = NULL;
@@ -99,6 +100,7 @@ private:
 	int getGoodsIndexByNo(int _No);
 	// attacker
 	void setAttackTarget();
+	void updateAttackTarget();
 };
 
 #endif // !__UAVAI_H__
