@@ -14,8 +14,10 @@
 #include "JsonParse.h"
 #include "Point3.h"
 #include <vector>
+#include <deque>
 
 using std::vector;
+using std::deque;
 #define SOCKET_HEAD_LEN          8                      ///< 8个字节的头部长度
 
 
@@ -184,7 +186,7 @@ struct GOODS
 struct GOODSSTATUS
 {
 	int     nCatchedUavNo = -1;
-	vector<bool> nIsRejectUav;
+	deque<bool> nIsRejectUav;
 	bool isRejectedByHome = false;
 };
 

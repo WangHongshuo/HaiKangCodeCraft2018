@@ -36,7 +36,8 @@ private:
 	int UAVAttackerNum = 0;
 	int UAVNum = -1;
 	int initUavValueNum = 0;
-	int tmpMark = -1; // @ in environmentAware();
+	int tmpMark_1 = -1; // @ in environmentAware();
+	int tmpMark_2 = -1; // @ in updateWeUavMark();
 	int moveAction = -1;
 	int cheapestUavIndex = 0;
 	int mostExpensiveUavIndex = 0;
@@ -57,8 +58,9 @@ private:
 	vector<Point3> tmpGoodsPath; // @ in searchGoods();
 	vector<Point3> minGoodsPath; // @ in searchGoods();
 	vector<Point3> availablePoints; // @ in getAvailableAreaPosisiton
-	vector<vector<vector<int>>> mapArray;
+	vector<vector<vector<int>>> pathMap;
 	vector<vector<vector<int>>> statusMap;
+	vector<vector<vector<int>>> restoredMap;
 	vector<GOODSSTATUS> goodsStatus;
 	AStar pathSearcher;
 	// init uav.nLastPos

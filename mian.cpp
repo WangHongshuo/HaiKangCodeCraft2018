@@ -321,6 +321,7 @@ int main(int argc, char *argv[])
 	pstAI->setInitUavTarget();
 
 	clock_t clockBegin, clockEnd;
+	clock_t timeCount = 0;
     // 根据服务器指令，不停的接受发送数据
     while (1)
     {
@@ -332,6 +333,7 @@ int main(int argc, char *argv[])
             AlgorithmCalculationFun(pstAI);
 			clockEnd = clock();
 			cout << "Cost Time: " << clockEnd - clockBegin << endl;
+			timeCount += clockEnd - clockBegin;
         }
 
         //发送飞行计划结构体
@@ -368,6 +370,7 @@ int main(int argc, char *argv[])
         {
             // 比赛结束
             printf("game over, we value %d, enemy value %d\n", pstMatchStatus->nWeValue, pstMatchStatus->nEnemyValue);
+			cout << "Total time: " << timeCount << endl;
             return 0;
         }
     }
