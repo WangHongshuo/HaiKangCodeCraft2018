@@ -22,7 +22,7 @@ public:
 	~UAVAI();
 	enum AREA_OBJ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL };
 	enum MOVE_ACTION { M_STANDBY, M_NEWPATH, M_NORMAL, M_MOVE_ALLY };
-	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL};
+	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL };
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
@@ -92,7 +92,7 @@ private:
 	int getMoveDirection(UAV &_uav);
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
-	Point3 getBestDodgePosition(const Point3 &_p, UAV &_uav); 
+	Point3 getBestDodgePosition(const Point3 &_p, UAV &_uav);
 	Point3 getAvailableAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);

@@ -25,7 +25,6 @@ public:
 	void setParameters(const Point3 &_p, Point3 *_to);
 private:
 	int getDistance(const Point3 &_from, const Point3 &_to);
-
 };
 
 // ËÑË÷ÇøÓò
@@ -42,7 +41,7 @@ public:
 	bool isDeadPath = false;
 	void setParameters(const Point3 &_parentPoint, Point3 *_to, vector<vector<vector<int>>> *_map);
 private:
-	Point3 *to = NULL;
+	Point3 * to = NULL;
 	int CLOSE_FLAG = 1;
 	vector<vector<vector<int>>> *map = NULL;
 	vector<SearchPoint> area;

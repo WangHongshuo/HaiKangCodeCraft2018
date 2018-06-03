@@ -6,7 +6,6 @@ AStar::AStar()
 	markedPoints.reserve(4800);
 }
 
-
 AStar::~AStar()
 {
 	map = NULL;
@@ -67,7 +66,6 @@ void AStar::clearPathMarkInMap(const int &_length)
 		setMarkInMap(*map, markedPoints[i], _mark);
 	}
 }
-
 
 SearchPoint::SearchPoint(const Point3 & _p, Point3 * _to)
 {

@@ -1,58 +1,55 @@
 /**	@file       JsonParse.cpp
  *	@note       Hikvision Digital Technology Co., Ltd. All Right Reserved.
- *	@brief		 
+ *	@brief
  *
  *	@author     lipengfei
  *	@date       2015/12/09
  *	@note       历史记录：
- *	@note       V1.0.0  
- *	@warning	
+ *	@note       V1.0.0
+ *	@warning
  */
-
 
 #include "JsonParse.h"
 #include <string.h>
 
-
-/** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, int *pValue, int nNullValue )
- *  @brief	获取节点值
- *	@param  -I   - const cJSON * pJson          父节点
- *	@param  -I   - const char * szJsonName      节点名称
- *	@param  -I   - int * pValue                 节点值
- *	@param  -I   - int nNullValue               默认值
- *	@return int                                 0表示成功，否则失败
- */
+ /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, int *pValue, int nNullValue )
+  *  @brief	获取节点值
+  *	@param  -I   - const cJSON * pJson          父节点
+  *	@param  -I   - const char * szJsonName      节点名称
+  *	@param  -I   - int * pValue                 节点值
+  *	@param  -I   - int nNullValue               默认值
+  *	@return int                                 0表示成功，否则失败
+  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString, int *pValue, int nNullValue)
 {
-    if (pJson       == NULL ||
-        szJsonName  == NULL ||
-        pValue      == NULL)
-    {
-        return -1;
-    }
+	if (pJson == NULL ||
+		szJsonName == NULL ||
+		pValue == NULL)
+	{
+		return -1;
+	}
 
-    cJSON       *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
-    
-    *pValue = nNullValue;
+	cJSON       *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
 
-    if (pJsonValue != NULL)
-    {
-        if (bString == true)
-        {
-            *pValue = atoi(pJsonValue->valuestring);
-        }
-        else
-        {
-            *pValue = pJsonValue->valueint;
-        }
-    }
-    else
-    {
-        return -1;
-    }
+	*pValue = nNullValue;
 
-    return 0;
+	if (pJsonValue != NULL)
+	{
+		if (bString == true)
+		{
+			*pValue = atoi(pJsonValue->valuestring);
+		}
+		else
+		{
+			*pValue = pJsonValue->valueint;
+		}
+	}
+	else
+	{
+		return -1;
+	}
 
+	return 0;
 }
 
 /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, char *szValue, int nLen)
@@ -65,28 +62,27 @@ int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString, int *pValue
  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, char *szValue, int nLen)
 {
-    if (pJson      == NULL ||
-        szJsonName == NULL ||
-        szValue    == NULL)
-    {
-        return -1;
-    }
+	if (pJson == NULL ||
+		szJsonName == NULL ||
+		szValue == NULL)
+	{
+		return -1;
+	}
 
-    cJSON   *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
+	cJSON   *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
 
-    memset(szValue, 0, nLen);
+	memset(szValue, 0, nLen);
 
-    if (pJsonValue != NULL)
-    {
-        strcpy(szValue, pJsonValue->valuestring);
-    }
-    else
-    {
-        return -1;
-    }
+	if (pJsonValue != NULL)
+	{
+		strcpy(szValue, pJsonValue->valuestring);
+	}
+	else
+	{
+		return -1;
+	}
 
-
-    return 0;
+	return 0;
 }
 
 /** @fn     int JSONGetValue(const cJSON *pJson, const char *szJsonName, float *pValue, float fNullValue )
@@ -99,35 +95,34 @@ int JSONGetValue(cJSON *pJson, const char *szJsonName, char *szValue, int nLen)
  */
 int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString, double *pValue, double fNullValue)
 {
-    if (pJson      == NULL ||
-        szJsonName == NULL ||
-        pValue     == NULL)
-    {
-        return -1;
-    }
+	if (pJson == NULL ||
+		szJsonName == NULL ||
+		pValue == NULL)
+	{
+		return -1;
+	}
 
-    cJSON       *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
+	cJSON       *pJsonValue = cJSON_GetObjectItem(pJson, szJsonName);
 
-    *pValue = fNullValue;
+	*pValue = fNullValue;
 
-    if (pJsonValue != NULL)
-    {
-        if (bString == true)
-        {
-            *pValue = atof(pJsonValue->valuestring);
-        }
-        else
-        {
-            *pValue = pJsonValue->valueint;
-        }
-    }
-    else
-    {
-        return -1;
-    }
+	if (pJsonValue != NULL)
+	{
+		if (bString == true)
+		{
+			*pValue = atof(pJsonValue->valuestring);
+		}
+		else
+		{
+			*pValue = pJsonValue->valueint;
+		}
+	}
+	else
+	{
+		return -1;
+	}
 
-
-    return 0;
+	return 0;
 }
 
 /** @fn     int JSONSetValue(cJSON *pJson, const char *szJsonName, char *szValue)
@@ -139,9 +134,9 @@ int JSONGetValue(cJSON *pJson, const char *szJsonName, bool bString, double *pVa
 */
 int JSONSetValue(cJSON *pJson, const char *szJsonName, char *szValue)
 {
-    cJSON       *pJsonValue = cJSON_CreateString(szValue);
+	cJSON       *pJsonValue = cJSON_CreateString(szValue);
 
-    cJSON_AddItemToObject(pJson, szJsonName, pJsonValue);
+	cJSON_AddItemToObject(pJson, szJsonName, pJsonValue);
 
-    return 0;
+	return 0;
 }

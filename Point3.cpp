@@ -43,7 +43,6 @@ bool Point3::operator==(const Point3 & _p)
 
 bool Point3::operator!=(const Point3 & _p)
 {
-	
 	if (this->x != _p.x || this->y != _p.y || this->z != _p.z)
 		return true;
 	else
