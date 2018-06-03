@@ -22,7 +22,7 @@
 #include "Point3.h"
 
 
-#define MAX_SOCKET_BUFFER       (1024 * 1024 * 4)       /// 发送接受数据最大4M
+const int MAX_SOCKET_BUFFER = (1024 * 1024 * 4);       /// 发送接受数据最大4M
 using std::cout;
 using std::endl;
 
@@ -118,6 +118,7 @@ void  AlgorithmCalculationFun(UAVAI *pstAI)
 
 int main(int argc, char *argv[])
 {
+	UAVAI *pstAI = new UAVAI;
 #ifdef OS_WINDOWS
     // windows下，需要进行初始化操作
     WSADATA wsa;
@@ -315,7 +316,7 @@ int main(int argc, char *argv[])
         pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
     }
 
-	UAVAI *pstAI = new UAVAI;
+	
 	pstAI->initPtr(pstMapInfo, pstMatchStatus,pstFlayPlane);
 	pstAI->initMap();
 	pstAI->setInitUavTarget();

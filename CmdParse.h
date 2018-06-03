@@ -18,7 +18,7 @@
 
 using std::vector;
 using std::deque;
-#define SOCKET_HEAD_LEN          8                      ///< 8个字节的头部长度
+const int SOCKET_HEAD_LEN = 8;                      ///< 8个字节的头部长度
 
 
 struct CONNECT_NOTICE
@@ -69,12 +69,12 @@ struct FOG
 };
 
 
-#define MAX_BUILDING_NUM        128      
-#define MAX_FOG_NUM        128
-#define MAX_UAV_NUM         512
-#define MAX_UAV_PRICE_NUM    64
-#define MAX_GOODS_NUM       256
-#define MAX_PATH_LENGTH     600
+const int MAX_BUILDING_NUM = 128;
+const int MAX_FOG_NUM = 128;
+const int MAX_UAV_NUM = 512;
+const int MAX_UAV_PRICE_NUM = 64;
+const int MAX_GOODS_NUM = 256;
+const int MAX_PATH_LENGTH = 600;
 
 
 enum UAV_STATUS

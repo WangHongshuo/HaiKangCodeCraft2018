@@ -6,7 +6,16 @@ UAVAI::UAVAI()
 	minPath.reserve(600);
 	tmpGoodsPath.reserve(600);
 	minGoodsPath.reserve(600);
-	availablePoints.reserve(12);
+	availablePoints.reserve(11);
+	dodgePosition.reserve(11);
+	tmpUavMoveScope_1.reserve(11);
+	tmpUavMoveScope_2.reserve(11);
+	tmpUavMoveScope_3.reserve(11);
+	MOVE_DIRECTION_DELTA.resize(10);
+	MOVE_DIRECTION_DELTA = { Point3(-1,-1,0), Point3(-1,0,0), Point3(-1,1,0), 
+		                     Point3(0,-1,0),  Point3(0,1,0),  Point3(1,-1,0),  
+		                     Point3(1,0,0),   Point3(1,1,0),  Point3(0,0,-1), 
+		                     Point3(0,0,1) };
 }
 
 UAVAI::~UAVAI()
@@ -398,9 +407,13 @@ void UAVAI::updateWeUavMark(UAV & _uav)
 	// if the position had changed
 	if (_uav.nPos != _uav.nLastPos)
 	{
-		tmpMark_2 = getMapValue(restoredMap, _uav.nLastPos);
+		tmpMark_2 = getMapValue(statusMap, _uav.nLastPos);
+		if (tmpMark_2 == _uav.nNO)
+		{
+			tmpMark_2 = getMapValue(restoredMap, _uav.nLastPos);
+			setMapValue(statusMap, _uav.nLastPos, tmpMark_2);
+		}
 		setMapValue(statusMap, _uav.nPos, _uav.nNO);
-		setMapValue(statusMap, _uav.nLastPos, tmpMark_2);
 		_uav.nLastPos = _uav.nPos;
 	}
 }
@@ -421,36 +434,13 @@ int UAVAI::getMoveDirection(UAV & _uav)
 int UAVAI::isUavInArea(const Point3 & _p, vector<int>& _uavNo)
 {
 	_uavNo.resize(0);
+	tmpUavMoveScope_1.resize(0);
 	int _No = -1;
 	int _num = 0;
-	for (int i = -1; i <= 1; i++)
+	getUavMoveScope(_p, tmpUavMoveScope_1);
+	for (int i = 0; i < int(tmpUavMoveScope_1.size()); i++)
 	{
-		for (int j = -1; j <= 1; j++)
-		{
-			tmpPoint_3 = _p;
-			tmpPoint_3.x += i;
-			tmpPoint_3.y += j;
-			if (tmpPoint_3 == _p)
-				continue;
-			if (!isPositionInMap(tmpPoint_3))
-				continue;
-			_No = getMapValue(statusMap, tmpPoint_3);
-			if (_No >= 0)
-			{
-				_uavNo.push_back(_No);
-				_num++;
-			}
-		}
-	}
-	for (int i = -1; i <= 1; i++)
-	{
-		tmpPoint_3 = _p;
-		tmpPoint_3.z += i;
-		if (tmpPoint_3 == _p)
-			continue;
-		if (!isPositionInMap(tmpPoint_3))
-			continue;
-		_No = getMapValue(statusMap, tmpPoint_3);
+		_No = getMapValue(statusMap, tmpUavMoveScope_1[i]);
 		if (_No >= 0)
 		{
 			_uavNo.push_back(_No);
@@ -469,6 +459,12 @@ bool UAVAI::isPositionInMap(const Point3 & _p)
 	if (_p.z < 0 || _p.z > map->nMapZ - 1)
 		return false;
 	return true;
+}
+
+Point3 UAVAI::getBestDodgePosition(const Point3 & _p, UAV & _uav)
+{
+
+	return Point3();
 }
 
 Point3 UAVAI::getAvailableAreaPosisiton(const Point3 & _p, UAV &_uav)
@@ -543,13 +539,30 @@ int UAVAI::getEnemyUavIndexByNo(const int & _No)
 	return -1;
 }
 
+void UAVAI::getUavMoveScope(const Point3 & _center, vector<Point3>& _scope)
+{
+	int _tmpMark;
+	if(!_scope.empty())
+		_scope.resize(0);
+	for (int i = 0; i < MOVE_DIRECTION_NUM; i++)
+	{
+		tmpPoint_5 = _center + MOVE_DIRECTION_DELTA[i];
+		if (!isPositionInMap(tmpPoint_5))
+			continue;
+		_tmpMark = getMapValue(statusMap, tmpPoint_5);
+		if (_tmpMark == AREA_OBJ::IS_BUILDING)
+			continue;
+		_scope.push_back(tmpPoint_5);
+	}
+}
+
 int UAVAI::environmentAware(UAV & _uav)
 {
 	int _uavNum = 0;
 	if (_uav.nAction == UAV_ACTION::UAV_STANDBY)
 	{
 		_uavNum = isUavInArea(_uav.nPos, uavNo);
-		if (_uavNum > 0)
+		if (_uavNum > 1)
 		{
 			for (int i = 0; i < _uavNum; i++)
 			{

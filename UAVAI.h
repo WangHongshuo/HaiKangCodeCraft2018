@@ -28,6 +28,12 @@ public:
 	void setInitUavTarget();
 	void getNextAction();
 private:
+	struct DodgePoint
+	{
+		Point3 position;
+		int distance = 0;
+	};
+	static const int MOVE_DIRECTION_NUM = 10;
 	int MAX_ALIVE_UAV_NUM;
 	int MAX_ATTACKER_UAV_NUM;
 	int money = 0;
@@ -51,8 +57,14 @@ private:
 	Point3 tmpPoint_2; // @ in moving();
 	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
 	Point3 tmpPoint_4; // @ in environmentAware();
+	Point3 tmpPoint_5; // @ in getUavMoveScope();
 	Point3 enemyParkingPos;
 	vector<int> uavNo;
+	vector<DodgePoint> dodgePosition;
+	vector<Point3> MOVE_DIRECTION_DELTA;
+	vector<Point3> tmpUavMoveScope_1; // @ in isUavInArea();
+	vector<Point3> tmpUavMoveScope_2;
+	vector<Point3> tmpUavMoveScope_3;
 	vector<Point3> tmpPath; // @ in setMinUavHorizontalPath();
 	vector<Point3> minPath; // @ in setMinUavHorizontalPath();
 	vector<Point3> tmpGoodsPath; // @ in searchGoods();
@@ -80,9 +92,11 @@ private:
 	int getMoveDirection(UAV &_uav);
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo);
 	bool isPositionInMap(const Point3 &_p);
+	Point3 getBestDodgePosition(const Point3 &_p, UAV &_uav); 
 	Point3 getAvailableAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);
+	void getUavMoveScope(const Point3  &_center, vector<Point3> &_scope);
 	// get uav path vector<Point3>
 	bool getPath(UAV &_uav);
 	bool getPath(const Point3 &_from, const Point3 &_to, vector<Point3> &_path, int &_pathLength);
