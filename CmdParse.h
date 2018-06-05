@@ -120,6 +120,7 @@ struct UAV
 	int nAttackTarget = 0;
 	int nAttackType = ATTACK_TYPE::AT_NULL;
 	bool nIsUpdateMapMark = false;
+	bool nIsEnemy = false;
 };
 
 struct UAV_PRICE
