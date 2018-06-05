@@ -87,14 +87,17 @@ void UAVAI::initMap()
 	// init building in the mapArray
 	for (int i = 0; i < map->nBuildingNum; i++)
 	{
-		if (map->astBuilding[i].nH > MAX_BUILDING_HEIGHT)
-			MAX_BUILDING_HEIGHT = map->astBuilding[i].nH;
+		if (map->astBuilding[i].nH > MAX_PATH_HEIGHT)
+			MAX_PATH_HEIGHT = map->astBuilding[i].nH;
 		_p1.setPoint(map->astBuilding[i].nX, map->astBuilding[i].nY, 0);
 		_p2 = _p1 + Point3(map->astBuilding[i].nL - 1, map->astBuilding[i].nW - 1, map->astBuilding[i].nH - 1);
 		fillArea(pathMap, _p1, _p2, AREA_OBJ::IS_BUILDING);
 	}
 	statusMap = pathMap;
 	restoredMap = pathMap;
+	MAX_PATH_HEIGHT += 3;
+	if (MAX_PATH_HEIGHT > map->nHHigh)
+		MAX_PATH_HEIGHT = map->nHHigh;
 }
 
 void UAVAI::setInitUavTarget()
@@ -441,7 +444,7 @@ int UAVAI::isUavInArea(const Point3 & _p, vector<int>& _uavNo, T &_area)
 	int _num = 0;
 	getUavMoveScope(_p, _area);
 	T::iterator _it;
-	for (_it = _area.begin();_it != _area.end(); _it++)
+	for (_it = _area.begin(); _it != _area.end(); _it++)
 	{
 		_No = getMapValue(statusMap, (*_it));
 		if (_No >= 0)
@@ -453,17 +456,23 @@ int UAVAI::isUavInArea(const Point3 & _p, vector<int>& _uavNo, T &_area)
 	return _num;
 }
 
-bool UAVAI::isUavInArea(const Point3 & _p)
+bool UAVAI::isUavInArea(const Point3 &_p, int & _ignoredNo, CHECK_OPT _opt)
 {
 	tmpUavScope_1.resize(0);
-	int _num = 0;
+	int _tmpMark = -1;
 	getUavMoveScope(_p, tmpUavScope_1);
 	for (int i = 0; i<int(tmpUavScope_1.size()); i++)
 	{
-		if (getMapValue(statusMap, tmpUavScope_1[i]) >= 0)
+		_tmpMark = getMapValue(statusMap, tmpUavScope_1[i]);
+		if (_tmpMark >= 0)
 		{
-			_num++;
-			if (_num >= 2)
+			if (_tmpMark == _ignoredNo)
+				continue;
+			if (_opt == CHECK_OPT::CO_ALL)
+				return true;
+			if (_opt == CHECK_OPT::CO_ENEMY && _tmpMark >= 1000)
+				return true;
+			if (_opt == CHECK_OPT::CO_ALLY && _tmpMark < 1000)
 				return true;
 		}
 	}
@@ -476,7 +485,7 @@ int UAVAI::fixDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV &_uav)
 	{
 		for (it_1 = _area.begin(); it_1 != _area.end();)
 		{
-			if (getDistance(_dodgeUav.nPos, (*it_1)) <= 2)
+			if (getDistanceInScope(_dodgeUav.nPos, (*it_1)) <= 2)
 				it_1 = _area.erase(it_1);
 			else
 				++it_1;
@@ -486,8 +495,10 @@ int UAVAI::fixDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV &_uav)
 	else
 	{
 		fixDodgeArea(_area, _dodgeUav.nPos);
+		if (_dodgeUav.nIsMoved)
+			return 0;
 		int _curIdx = _dodgeUav.nCurrentPathIndex;
-		if (_curIdx + 1 <= _dodgeUav.nPathLength)
+		if (_curIdx + 1 <= _dodgeUav.nPathLength - 1)
 		{
 			if (_dodgeUav.nPath[_curIdx + 1] == _uav.nPos)
 			{
@@ -512,17 +523,33 @@ void UAVAI::fixDodgeArea(list<Point3>& _area, const Point3 & _removedPoint)
 	}
 }
 
-void UAVAI::doubleCheckDodgeArea(list<Point3>& _area)
+void UAVAI::doubleCheckDodgeArea(list<Point3>& _area, int &_ignoredNo, CHECK_OPT _opt)
 {
 	for (it_2 = _area.begin(); it_2 != _area.end();)
 	{
-		if (isUavInArea(*(it_2)))
+		if (isUavInArea(*(it_2), _ignoredNo, _opt))
 			it_2 = _area.erase(it_2);
 		else
 			++it_2;
 	}
 }
 
+Point3 UAVAI::getBestDodgePositon(list<Point3>& _area, UAV & _uav)
+{
+	Point3 _tmpPoint;
+	int _minDistance = 999999;
+	int _tmpDistance = -1;
+	for (it_3 = _area.begin(); it_3 != _area.end(); it_3++)
+	{
+		_tmpDistance = getHorizontalDistance(_uav.nTarget, *it_3);
+		if (_minDistance > _tmpDistance)
+		{
+			_minDistance = _tmpDistance;
+			_tmpPoint = *it_3;
+		}
+	}
+	return _tmpPoint;
+}
 
 bool UAVAI::isPositionInMap(const Point3 & _p)
 {
@@ -535,10 +562,15 @@ bool UAVAI::isPositionInMap(const Point3 & _p)
 	return true;
 }
 
-int UAVAI::getDistance(const Point3 & _p1, const Point3 & _p2)
+int UAVAI::getDistanceInScope(const Point3 & _p1, const Point3 & _p2)
 {
 	// the weight of height is set to 2
 	return int(pow(_p1.x - _p2.x, 2)) + int(pow(_p1.y - _p2.y, 2)) + int(abs(_p1.z - _p2.z) * 2);
+}
+
+int UAVAI::getHorizontalDistance(const Point3 & _p1, const Point3 & _p2)
+{
+	return int(pow(_p1.x - _p2.x, 2)) + int(pow(_p1.y - _p2.y, 2));
 }
 
 Point3 UAVAI::getAvailableAreaPosisiton(const Point3 & _p, UAV &_uav)
@@ -624,7 +656,7 @@ UAV * UAVAI::getUavPtrByNo(int _No)
 	}
 	else
 	{
-				return &(match->astWeUav[_No]);
+		return &(match->astWeUav[_No]);
 	}
 	return nullptr;
 }
@@ -692,7 +724,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			// move
 			if (_isDodge > 0)
 			{
-				doubleCheckDodgeArea(dodgePosition);
+				doubleCheckDodgeArea(dodgePosition, _uav.nNO);
 				if (!dodgePosition.empty())
 					_uav.nPos = *(dodgePosition.begin());
 			}
@@ -702,228 +734,381 @@ int UAVAI::environmentAware(UAV & _uav)
 		// don't move
 		return -1;
 	}
+
 	tmpMark_1 = getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]);
 	uavMoveDirection = getMoveDirection(_uav);
 	// if is enemy
 	if (tmpMark_1 >= 1000)
 	{
-		if (uavMoveDirection == MOVE_DIRECTION::M_DOWNWARD || uavMoveDirection == MOVE_DIRECTION::M_UPWARD)
+		_uavNum = isUavInArea(_uav.nPath[_uav.nCurrentPathIndex], uavNo, dodgePosition);
+		for (int i = 0; i < _uavNum; i++)
 		{
-			return MOVE_ACTION::M_STANDBY;
+			if (uavNo[i] == _uav.nNO)
+				continue;
+			// if there is enemy uav exist
+			if (uavNo[i] >= 1000)
+			{
+				pEnemyUav = getUavPtrByNo(uavNo[i]);
+				_isDodge += fixDodgeArea(dodgePosition, *pEnemyUav, _uav);
+			}
+			else
+			{
+				pAllyUav = getUavPtrByNo(uavNo[i]);
+				if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+					fixDodgeArea(dodgePosition, pAllyUav->nPos);
+				else
+					_isDodge += fixDodgeArea(dodgePosition, *pAllyUav, _uav);
+			}
 		}
-		else if (_uav.nPos.z < map->nHHigh)
+		doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
+		if (!dodgePosition.empty())
 		{
-			tmpPoint_4 = _uav.nPos;
-			tmpPoint_4.z += 1;
+			tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
 			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
 			return MOVE_ACTION::M_NEWPATH;
 		}
 		else
 		{
-			// unknow
 			return MOVE_ACTION::M_STANDBY;
 		}
+
+		//if (uavMoveDirection == MOVE_DIRECTION::M_DOWNWARD || uavMoveDirection == MOVE_DIRECTION::M_UPWARD)
+		//{
+		//	return MOVE_ACTION::M_STANDBY;
+		//}
+		//else if (_uav.nPos.z < map->nHHigh)
+		//{
+		//	tmpPoint_4 = _uav.nPos;
+		//	tmpPoint_4.z += 1;
+		//	uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//	return MOVE_ACTION::M_NEWPATH;
+		//}
+		//else
+		//{
+		//	// unknow
+		//	return MOVE_ACTION::M_STANDBY;
+		//}
 	}
 	// if is ally
 	else if (tmpMark_1 >= 0)
 	{
 		pAllyUav = &(match->astWeUav[tmpMark_1]);
-		if (uavMoveDirection == MOVE_DIRECTION::M_UPWARD)
+		if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
 		{
-			if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+			if (!pAllyUav->nIsMoved)
 			{
-				if (pAllyUav->nPos.z < map->nHLow)
-				{
-					tmpPoint_4 = _uav.nPos;
-					tmpPoint_4.z += 1;
-					uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-					pAllyUav->nPos.z += 1;
-					pAllyUav->nIsMoved = true;
-					updateWeUavMark(*pAllyUav);
-					return MOVE_ACTION::M_NEWPATH;
-				}
-				else
-				{
-					tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
-					pAllyUav->nPos = tmpPoint_4;
-					pAllyUav->nIsMoved = true;
-					updateWeUavMark(*pAllyUav);
-					return MOVE_ACTION::M_NORMAL;
-				}
+				environmentAware(*pAllyUav);
+				return MOVE_ACTION::M_NORMAL;
 			}
 			else
 			{
-				// there is something wrong in taking off part
-				if (!pAllyUav->nIsMoved)
-				{
-					if (pAllyUav->nPath[pAllyUav->nCurrentPathIndex + 1] == _uav.nPos  &&
-						pAllyUav->nPos == _uav.nPath[_uav.nCurrentPathIndex])
-					{
-						pAllyUav->nIsMoved = true;
-						tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
-						uavDodgeAndGetNewPath(*pAllyUav, tmpPoint_4);
-						return MOVE_ACTION::M_NORMAL;
-					}
-					else
-					{
-						return MOVE_ACTION::M_NORMAL;
-					}
-				}
-				else
-				{
-					return MOVE_ACTION::M_STANDBY;
-				}
+				return MOVE_ACTION::M_STANDBY;
 			}
 		}
-		else if (uavMoveDirection == MOVE_DIRECTION::M_DOWNWARD)
+		if (!pAllyUav->nIsMoved && pAllyUav->nPath[pAllyUav->nCurrentPathIndex + 1] != _uav.nPos)
 		{
-			if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+			return MOVE_ACTION::M_NORMAL;
+		}
+
+		_uavNum = isUavInArea(_uav.nPos, uavNo, dodgePosition);
+		for (int i = 0; i < _uavNum; i++)
+		{
+			if (uavNo[i] == _uav.nNO)
+				continue;
+			// if there is enemy uav exist
+			if (uavNo[i] >= 1000)
 			{
-				if (pAllyUav->nPos.z < map->nHLow)
-				{
-					// maybe something wrong
-					tmpPoint_4 = _uav.nPos;
-					tmpPoint_4.z += 1;
-					uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-					pAllyUav->nPos.z += 1;
-					updateWeUavMark(*pAllyUav);
-					return MOVE_ACTION::M_NEWPATH;
-				}
-				else
-				{
-					tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
-					// if can't find dodge position, upward
-					if (tmpPoint_4 == pAllyUav->nPos)
-					{
-						tmpPoint_4 = _uav.nPos;
-						tmpPoint_4.z += 1;
-						uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-						pAllyUav->nPos.z += 1;
-						updateWeUavMark(*pAllyUav);
-						return MOVE_ACTION::M_NEWPATH;
-					}
-					else
-					{
-						pAllyUav->nPos = tmpPoint_4;
-						updateWeUavMark(*pAllyUav);
-						return MOVE_ACTION::M_NORMAL;
-					}
-				}
+				pEnemyUav = getUavPtrByNo(uavNo[i]);
+				_isDodge += fixDodgeArea(dodgePosition, *pEnemyUav, _uav);
 			}
 			else
 			{
-				tmpPoint_4 = _uav.nPos;
-				tmpPoint_4.z += 1;
-				uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-				return MOVE_ACTION::M_NEWPATH;
+				pAllyUav = getUavPtrByNo(uavNo[i]);
+				if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+					fixDodgeArea(dodgePosition, pAllyUav->nPos);
+				else
+					_isDodge += fixDodgeArea(dodgePosition, *pAllyUav, _uav);
 			}
+		}
+		doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
+		if (!dodgePosition.empty())
+		{
+			tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
+			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+			return MOVE_ACTION::M_NEWPATH;
 		}
 		else
 		{
-			if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
-			{
-				if (pAllyUav->nPos.z < map->nHHigh)
-				{
-					pAllyUav->nPos.z += 1;
-					pAllyUav->nIsMoved = true;
-					updateWeUavMark(*pAllyUav);
-				}
-				else
-				{
-					tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
-					pAllyUav->nPos = tmpPoint_4;
-					pAllyUav->nIsMoved = true;
-					updateWeUavMark(*pAllyUav);
-				}
-				return MOVE_ACTION::M_NORMAL;
-			}
-			else if (pAllyUav->nAction == UAV_ACTION::UAV_ATTACK)
-			{
-				if (pAllyUav->nPathLength == 0)
-				{
-					tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
-					pAllyUav->nPos = tmpPoint_4;
-					pAllyUav->nIsMoved = true;
-					updateWeUavMark(*pAllyUav);
-					return MOVE_ACTION::M_NORMAL;
-				}
-				else
-				{
-					return MOVE_ACTION::M_STANDBY;
-				}
-			}
-			else
-			{
-				tmpPoint_4 = getAvailableAreaPosisiton(_uav.nPos, _uav);
-				uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-				return MOVE_ACTION::M_NEWPATH;
-			}
+			return MOVE_ACTION::M_STANDBY;
 		}
+
+		//if (uavMoveDirection == MOVE_DIRECTION::M_UPWARD)
+		//{
+		//	if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+		//	{
+		//		if (pAllyUav->nPos.z < map->nHLow)
+		//		{
+		//			tmpPoint_4 = _uav.nPos;
+		//			tmpPoint_4.z += 1;
+		//			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//			pAllyUav->nPos.z += 1;
+		//			pAllyUav->nIsMoved = true;
+		//			updateWeUavMark(*pAllyUav);
+		//			return MOVE_ACTION::M_NEWPATH;
+		//		}
+		//		else
+		//		{
+		//			tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
+		//			pAllyUav->nPos = tmpPoint_4;
+		//			pAllyUav->nIsMoved = true;
+		//			updateWeUavMark(*pAllyUav);
+		//			return MOVE_ACTION::M_NORMAL;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		// there is something wrong in taking off part
+		//		if (!pAllyUav->nIsMoved)
+		//		{
+		//			if (pAllyUav->nPath[pAllyUav->nCurrentPathIndex + 1] == _uav.nPos  &&
+		//				pAllyUav->nPos == _uav.nPath[_uav.nCurrentPathIndex])
+		//			{
+		//				pAllyUav->nIsMoved = true;
+		//				tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
+		//				uavDodgeAndGetNewPath(*pAllyUav, tmpPoint_4);
+		//				return MOVE_ACTION::M_NORMAL;
+		//			}
+		//			else
+		//			{
+		//				return MOVE_ACTION::M_NORMAL;
+		//			}
+		//		}
+		//		else
+		//		{
+		//			return MOVE_ACTION::M_STANDBY;
+		//		}
+		//	}
+		//}
+		//else if (uavMoveDirection == MOVE_DIRECTION::M_DOWNWARD)
+		//{
+		//	if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+		//	{
+		//		if (pAllyUav->nPos.z < map->nHLow)
+		//		{
+		//			// maybe something wrong
+		//			tmpPoint_4 = _uav.nPos;
+		//			tmpPoint_4.z += 1;
+		//			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//			pAllyUav->nPos.z += 1;
+		//			updateWeUavMark(*pAllyUav);
+		//			return MOVE_ACTION::M_NEWPATH;
+		//		}
+		//		else
+		//		{
+		//			tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
+		//			// if can't find dodge position, upward
+		//			if (tmpPoint_4 == pAllyUav->nPos)
+		//			{
+		//				tmpPoint_4 = _uav.nPos;
+		//				tmpPoint_4.z += 1;
+		//				uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//				pAllyUav->nPos.z += 1;
+		//				updateWeUavMark(*pAllyUav);
+		//				return MOVE_ACTION::M_NEWPATH;
+		//			}
+		//			else
+		//			{
+		//				pAllyUav->nPos = tmpPoint_4;
+		//				updateWeUavMark(*pAllyUav);
+		//				return MOVE_ACTION::M_NORMAL;
+		//			}
+		//		}
+		//	}
+		//	else
+		//	{
+		//		tmpPoint_4 = _uav.nPos;
+		//		tmpPoint_4.z += 1;
+		//		uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//		return MOVE_ACTION::M_NEWPATH;
+		//	}
+		//}
+		//else
+		//{
+		//	if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+		//	{
+		//		if (pAllyUav->nPos.z < map->nHHigh)
+		//		{
+		//			pAllyUav->nPos.z += 1;
+		//			pAllyUav->nIsMoved = true;
+		//			updateWeUavMark(*pAllyUav);
+		//		}
+		//		else
+		//		{
+		//			tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
+		//			pAllyUav->nPos = tmpPoint_4;
+		//			pAllyUav->nIsMoved = true;
+		//			updateWeUavMark(*pAllyUav);
+		//		}
+		//		return MOVE_ACTION::M_NORMAL;
+		//	}
+		//	else if (pAllyUav->nAction == UAV_ACTION::UAV_ATTACK)
+		//	{
+		//		if (pAllyUav->nPathLength == 0)
+		//		{
+		//			tmpPoint_4 = getAvailableAreaPosisiton(pAllyUav->nPos, *pAllyUav);
+		//			pAllyUav->nPos = tmpPoint_4;
+		//			pAllyUav->nIsMoved = true;
+		//			updateWeUavMark(*pAllyUav);
+		//			return MOVE_ACTION::M_NORMAL;
+		//		}
+		//		else
+		//		{
+		//			return MOVE_ACTION::M_STANDBY;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		tmpPoint_4 = getAvailableAreaPosisiton(_uav.nPos, _uav);
+		//		uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//		return MOVE_ACTION::M_NEWPATH;
+		//	}
+		//}
 	}
 	// TODO: check next step position area (10 directions)
 	else
 	{
-		UAV *_otherUav = NULL;
+		bool _isNextStepGood = true;
 		_uavNum = isUavInArea(_uav.nPath[_uav.nCurrentPathIndex], uavNo, dodgePosition);
 		if (_uavNum > 1)
 		{
 			for (int i = 0; i < _uavNum; i++)
 			{
-				if (uavNo[i] < 1000)
+				if (uavNo[i] == _uav.nNO)
+					continue;
+				// if there is enemy uav exist
+				if (uavNo[i] >= 1000)
 				{
-					if (uavNo[i] == _uav.nNO)
-						continue;
-					_otherUav = &(match->astWeUav[uavNo[i]]);
-					if (_otherUav->nAction == UAV_ACTION::UAV_STANDBY)
+					_isNextStepGood = false;
+					break;
+				}
+				else
+				{
+					pAllyUav = getUavPtrByNo(uavNo[i]);
+					if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+						fixDodgeArea(dodgePosition, pAllyUav->nPos);
+					else
+						_isDodge += fixDodgeArea(dodgePosition, *pAllyUav, _uav);
+				}
+				if (_isDodge > 0)
+				{
+					_isNextStepGood = false;
+					break;
+				}
+			}
+			if (!_isNextStepGood)
+			{
+				_uavNum = isUavInArea(_uav.nPos, uavNo, dodgePosition);
+				for (int i = 0; i < _uavNum; i++)
+				{
+					fixDodgeArea(dodgePosition, _uav.nPath[_uav.nCurrentPathIndex]);
+					// if there is enemy uav exist
+					if (uavNo[i] >= 1000)
 					{
-						continue;
-					}
-
-					if (_otherUav->nIsMoved)
-					{
-						if (_otherUav->nPath[_otherUav->nCurrentPathIndex + 1] == _uav.nPath[_uav.nCurrentPathIndex])
-						{
-							if (_uav.nPos.z + 1 <= map->nHHigh)
-							{
-								tmpPoint_4 = _uav.nPos;
-								tmpPoint_4.z += 1;
-								tmpMark_1 = getMapValue(statusMap, tmpPoint_4);
-								if (tmpMark_1 == AREA_OBJ::IS_FOG || tmpMark_1 == AREA_OBJ::IS_NULL)
-								{
-									uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-									return MOVE_ACTION::M_NEWPATH;
-								}
-								tmpPoint_4.z -= 2;
-								if (tmpMark_1 == AREA_OBJ::IS_FOG || tmpMark_1 == AREA_OBJ::IS_NULL)
-								{
-									uavDodgeAndGetNewPath(_uav, tmpPoint_4);
-									return MOVE_ACTION::M_NEWPATH;
-								}
-								return MOVE_ACTION::M_STANDBY;
-							}
-						}
-						continue;
+						pEnemyUav = getUavPtrByNo(uavNo[i]);
+						_isDodge += fixDodgeArea(dodgePosition, *pEnemyUav, _uav);
 					}
 					else
 					{
-						if (_otherUav->nPath[_otherUav->nCurrentPathIndex + 1] == _uav.nPath[_uav.nCurrentPathIndex])
-						{
-							_otherUav->nIsMoved = true;
-							continue;
-						}
+						pAllyUav = getUavPtrByNo(uavNo[i]);
+						if (pAllyUav->nAction == UAV_ACTION::UAV_STANDBY)
+							fixDodgeArea(dodgePosition, pAllyUav->nPos);
 						else
-						{
-							continue;
-						}
+							_isDodge += fixDodgeArea(dodgePosition, *pAllyUav, _uav);
 					}
 				}
+				doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
+				if (!dodgePosition.empty())
+				{
+					tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
+					uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+					return MOVE_ACTION::M_NEWPATH;
+				}
+				else
+				{
+					return MOVE_ACTION::M_STANDBY;
+				}
 			}
-			return MOVE_ACTION::M_NORMAL;
+			else
+			{
+				return MOVE_ACTION::M_NORMAL;
+			}
 		}
 		else
 		{
 			return MOVE_ACTION::M_NORMAL;
 		}
+
+		//UAV *_otherUav = NULL;
+		//_uavNum = isUavInArea(_uav.nPath[_uav.nCurrentPathIndex], uavNo, dodgePosition);
+		//if (_uavNum > 1)
+		//{
+		//	for (int i = 0; i < _uavNum; i++)
+		//	{
+		//		if (uavNo[i] < 1000)
+		//		{
+		//			if (uavNo[i] == _uav.nNO)
+		//				continue;
+		//			_otherUav = &(match->astWeUav[uavNo[i]]);
+		//			if (_otherUav->nAction == UAV_ACTION::UAV_STANDBY)
+		//			{
+		//				continue;
+		//			}
+
+		//			if (_otherUav->nIsMoved)
+		//			{
+		//				if (_otherUav->nPath[_otherUav->nCurrentPathIndex + 1] == _uav.nPath[_uav.nCurrentPathIndex])
+		//				{
+		//					if (_uav.nPos.z + 1 <= map->nHHigh)
+		//					{
+		//						tmpPoint_4 = _uav.nPos;
+		//						tmpPoint_4.z += 1;
+		//						tmpMark_1 = getMapValue(statusMap, tmpPoint_4);
+		//						if (tmpMark_1 == AREA_OBJ::IS_FOG || tmpMark_1 == AREA_OBJ::IS_NULL)
+		//						{
+		//							uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//							return MOVE_ACTION::M_NEWPATH;
+		//						}
+		//						tmpPoint_4.z -= 2;
+		//						if (tmpMark_1 == AREA_OBJ::IS_FOG || tmpMark_1 == AREA_OBJ::IS_NULL)
+		//						{
+		//							uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+		//							return MOVE_ACTION::M_NEWPATH;
+		//						}
+		//						return MOVE_ACTION::M_STANDBY;
+		//					}
+		//				}
+		//				continue;
+		//			}
+		//			else
+		//			{
+		//				if (_otherUav->nPath[_otherUav->nCurrentPathIndex + 1] == _uav.nPath[_uav.nCurrentPathIndex])
+		//				{
+		//					_otherUav->nIsMoved = true;
+		//					continue;
+		//				}
+		//				else
+		//				{
+		//					continue;
+		//				}
+		//			}
+		//		}
+		//	}
+		//	return MOVE_ACTION::M_NORMAL;
+		//}
+		//else
+		//{
+		//	return MOVE_ACTION::M_NORMAL;
+		//}
 	}
 }
 
@@ -1088,7 +1273,7 @@ bool UAVAI::setMinUavHorizontalPath(const Point3 & _from, const Point3 & _to, ve
 	Point3 _tmpToPoint;
 	_tmpToPoint.setPoint(_from);
 	// calculate every min path in different z height
-	for (int i = map->nHLow; i <= map->nHHigh; i++)
+	for (int i = map->nHLow; i <= MAX_PATH_HEIGHT; i++)
 	{
 		// if the two points are not in the same hight
 		_tmpPathLength = 0;

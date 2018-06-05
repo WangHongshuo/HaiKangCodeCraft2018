@@ -27,13 +27,14 @@ public:
 	enum AREA_OBJ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL };
 	enum MOVE_ACTION { M_STANDBY, M_NEWPATH, M_NORMAL, M_MOVE_ALLY };
 	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL };
+	enum CHECK_OPT { CO_ALL, CO_ALLY, CO_ENEMY };
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
 	void getNextAction();
 private:
 	static const int MOVE_DIRECTION_NUM = 10;
-	int MAX_BUILDING_HEIGHT = -1;
+	int MAX_PATH_HEIGHT = -1;
 	int MAX_ALIVE_UAV_NUM;
 	int MAX_ATTACKER_UAV_NUM;
 	int money = 0;
@@ -64,6 +65,7 @@ private:
 	list<Point3> dodgePosition; // @ in environmentAware();
 	list<Point3>::iterator it_1; // @ in fixDodgeArea();
 	list<Point3>::iterator it_2; // @ in doubleCheckDodgeArea();
+	list<Point3>::iterator it_3; // @ in getBestDodgePositon();
 	vector<Point3> MOVE_DIRECTION_DELTA;
 	vector<Point3> tmpUavScope_1; // @ in bool isUavInArea();
 	vector<Point3> tmpUavMoveScope_2;
@@ -95,12 +97,14 @@ private:
 	int getMoveDirection(UAV &_uav);
 	template<typename T>
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo, T &_area);
-	bool isUavInArea(const Point3 &_p);
+	bool isUavInArea(const Point3 &_p, int & _ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
 	int fixDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV & _uav);
 	void fixDodgeArea(list<Point3> &_area, const Point3 &_removedPoint);
-	void doubleCheckDodgeArea(list<Point3> &_area);
+	void doubleCheckDodgeArea(list<Point3>& _area, int &_ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
+	Point3 getBestDodgePositon(list<Point3> &_area, UAV &_uav);
 	bool isPositionInMap(const Point3 &_p);
-	int getDistance(const Point3 &_p1, const Point3 &_p2);
+	int getDistanceInScope(const Point3 &_p1, const Point3 &_p2);
+	int getHorizontalDistance(const Point3 &_p1, const Point3 &_p2);
 	Point3 getAvailableAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
 	int getEnemyUavIndexByNo(const int &_No);
