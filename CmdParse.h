@@ -106,6 +106,7 @@ struct UAV
 	int     nGoodsNo;
 	// 自定义数据
 	Point3 nTarget;
+	Point3 nFrom;
 	UAV_ACTION nAction = UAV_ACTION::UAV_STANDBY;
 	int nPathLength = 0;
 	int nCurrentPathIndex = 0;
