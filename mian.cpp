@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 	//Mapinfo 结构体可能很大，不太适合放在栈中，可以定义为全局或者内存分配
 	MAP_INFO            *pstMapInfo;
 	MATCH_STATUS        *pstMatchStatus;
-	FLAY_PLANE          *pstFlayPlane;
+	FLY_PLANE          *pstFlayPlane;
 
 	pstMapInfo = (MAP_INFO *)malloc(sizeof(MAP_INFO));
 	if (pstMapInfo == NULL)
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	pstFlayPlane = (FLAY_PLANE *)malloc(sizeof(FLAY_PLANE));
+	pstFlayPlane = (FLY_PLANE *)malloc(sizeof(FLY_PLANE));
 	if (pstFlayPlane == NULL)
 	{
 		return -1;
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 
 	memset(pstMapInfo, 0, sizeof(MAP_INFO));
 	memset(pstMatchStatus, 0, sizeof(MATCH_STATUS));
-	memset(pstFlayPlane, 0, sizeof(FLAY_PLANE));
+	memset(pstFlayPlane, 0, sizeof(FLY_PLANE));
 
 	nRet = ParserMapInfo(pRecvBuffer + SOCKET_HEAD_LEN, pstMapInfo);
 	if (nRet != 0)

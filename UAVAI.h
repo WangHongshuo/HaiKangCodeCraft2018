@@ -28,7 +28,7 @@ public:
 	enum MOVE_ACTION { M_STANDBY, M_NEWPATH, M_NORMAL, M_MOVE_ALLY };
 	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL };
 	enum CHECK_OPT { CO_ALL, CO_ALLY, CO_ENEMY };
-	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLAY_PLANE * _flayPlane);
+	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLY_PLANE * _flayPlane);
 	void initMap();
 	void setInitUavTarget();
 	void getNextAction();
@@ -54,7 +54,7 @@ private:
 	UAV *pAllyUav = NULL;
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
-	FLAY_PLANE *plan = NULL;
+	FLY_PLANE *plan = NULL;
 	Point3 tmpPoint_1; // @ in moving();
 	Point3 tmpPoint_2; // @ in moving();
 	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
@@ -122,8 +122,9 @@ private:
 	void clearUavPath(UAV &_uav);
 	// buy new uav
 	void buyNewUav();
-	void initUavValue();
+	void initUavInfo();
 	int getUavValue(UAV &_uav);
+	void getUavInfo(UAV &_uav);
 	int getBuyNewUavIndex(GOODS &_goods);
 	// search goods
 	void searchGoods();

@@ -77,7 +77,8 @@ enum UAV_STATUS
 {
 	UAV_NOMAL = 0,
 	UAV_CRASH,
-	UAV_FOG
+	UAV_FOG,
+	UAV_CHARGE
 };
 
 enum UAV_ACTION
@@ -104,6 +105,7 @@ struct UAV
 	int     nLoadWeight;            ///< 跟type对应的无人机的载重一样，
 	UAV_STATUS  nStatus;
 	int     nGoodsNo;
+	int     nRemainPower;
 	// 自定义数据
 	Point3 nTarget;
 	Point3 nFrom;
@@ -122,6 +124,8 @@ struct UAV
 	int nAttackType = ATTACK_TYPE::AT_NULL;
 	bool nIsUpdateMapMark = false;
 	bool nIsEnemy = false;
+	int nCapacity;
+	int nCharge;
 };
 
 struct UAV_PRICE
@@ -129,6 +133,8 @@ struct UAV_PRICE
 	char    szType[8];
 	int     nLoadWeight;
 	int     nValue;
+	int     nCapacity;
+	int     nCharge;
 };
 
 /** @struct
@@ -156,7 +162,7 @@ struct MAP_INFO
 	UAV_PRICE   astUavPrice[MAX_UAV_PRICE_NUM];
 };
 
-struct FLAY_PLANE
+struct FLY_PLANE
 {
 	int     nUavNum;
 	UAV     astUav[MAX_UAV_NUM];
@@ -185,6 +191,8 @@ struct GOODSSTATUS
 	int     nCatchedUavNo = -1;
 	deque<bool> nIsRejectUav;
 	bool isRejectedByHome = false;
+	int nPathLength = -1;
+	vector<Point3> nPath;
 };
 
 struct MATCH_STATUS
@@ -266,6 +274,6 @@ int CreateReadyParam(READY_PARAM *pstParam, char *pBuffer, int *pLen);
  *	@param  -I   - int * pLen
  *	@return int
  */
-int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLen);
+int CreateFlayPlane(FLY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLen);
 
 #endif

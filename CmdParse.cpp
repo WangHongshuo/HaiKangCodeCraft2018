@@ -407,6 +407,20 @@ int ParserMapInfo(char *pBuffer, MAP_INFO *pstMap)
 			cJSON_Delete(pJsonRoot);
 			return nRet;
 		}
+		nRet = JSONGetValue(pPrice, "capacity", false, &(pstMap->astUavPrice[i].nCapacity));
+		if (nRet != 0)
+		{
+			printf("JSONGetValue error\n");
+			cJSON_Delete(pJsonRoot);
+			return nRet;
+		}
+		nRet = JSONGetValue(pPrice, "charge", false, &(pstMap->astUavPrice[i].nCharge));
+		if (nRet != 0)
+		{
+			printf("JSONGetValue error\n");
+			cJSON_Delete(pJsonRoot);
+			return nRet;
+		}
 	}
 	cJSON_Delete(pJsonRoot);
 
@@ -480,6 +494,13 @@ int ParserUav(cJSON *pUavArray, UAV *astUav, int *pNum)
 			return nRet;
 		}
 		astUav[i].nStatus = (UAV_STATUS)nStatus;
+
+		nRet = JSONGetValue(pUAV, "remain_electricity", false, &(astUav[i].nRemainPower));
+		if (nRet != 0)
+		{
+			printf("JSONGetValue error\n");
+			return nRet;
+		}
 
 		nRet = JSONGetValue(pUAV, "goods_no", false, &(astUav[i].nGoodsNo));
 		if (nRet != 0)
@@ -757,7 +778,7 @@ int CreateReadyParam(READY_PARAM *pstParam, char *pBuffer, int *pLen)
 *	@param  -I   - int * pLen
 *	@return int
 */
-int CreateFlayPlane(FLAY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLen)
+int CreateFlayPlane(FLY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLen)
 {
 	int         nRet = 0;
 	cJSON       *pRoot = cJSON_CreateObject();

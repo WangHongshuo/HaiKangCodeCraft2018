@@ -24,7 +24,7 @@ UAVAI::~UAVAI()
 	plan = NULL;
 }
 
-void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLAY_PLANE *_flayPlane)
+void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLY_PLANE *_flayPlane)
 {
 	map = _map;
 	match = _match;
@@ -46,9 +46,10 @@ void UAVAI::initPtr(MAP_INFO *_map, MATCH_STATUS *_match, FLAY_PLANE *_flayPlane
 	for (int i = 0; i < MAX_GOODS_NUM; i++)
 	{
 		goodsStatus[i].nIsRejectUav.resize(MAX_UAV_NUM);
+		goodsStatus[i].nPath.reserve(600);
 	}
 	uavNo.reserve(10);
-	initUavValue();
+	initUavInfo();
 	cheapestUavIndex = 0;
 	mostExpensiveUavIndex = 0;
 	for (int i = 1; i < map->nUavPriceNum; i++)
@@ -149,7 +150,7 @@ void UAVAI::getNextAction()
 	resetUavMovedFlag();
 
 	// init uav value
-	initUavValue();
+	initUavInfo();
 	// init uav nLastPos
 	if (match->nTime == 1)
 	{
@@ -740,7 +741,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			// move
 			if (_isDodge > 0)
 			{
-				doubleCheckDodgeArea(dodgePosition, _uav.nNO);
+				doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
 				if (!dodgePosition.empty())
 				{
 					_uav.nPos = *(dodgePosition.begin());
@@ -753,13 +754,13 @@ int UAVAI::environmentAware(UAV & _uav)
 		// don't move
 		return -1;
 	}
-
+	// next step map mark
 	tmpMark_1 = getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]);
 	uavMoveDirection = getMoveDirection(_uav);
 	// if is enemy
 	if (tmpMark_1 >= 1000)
 	{
-		_uavNum = isUavInArea(_uav.nPath[_uav.nCurrentPathIndex], uavNo, dodgePosition);
+		_uavNum = isUavInArea(_uav.nPos, uavNo, dodgePosition);
 		for (int i = 0; i < _uavNum; i++)
 		{
 			if (uavNo[i] == _uav.nNO)
@@ -855,7 +856,7 @@ int UAVAI::environmentAware(UAV & _uav)
 			return MOVE_ACTION::M_STANDBY;
 		}
 	}
-	// TODO: check next step position area (10 directions)
+	// check next step position area (10 directions)
 	else
 	{
 		bool _isNextStepGood = true;
@@ -1265,13 +1266,13 @@ void UAVAI::buyNewUav()
 	plan->nPurchaseNum = _purchaseNum;
 }
 
-void UAVAI::initUavValue()
+void UAVAI::initUavInfo()
 {
 	if (initUavValueNum < match->nUavWeNum)
 	{
 		for (int i = initUavValueNum; i < match->nUavWeNum; i++)
 		{
-			match->astWeUav[i].nValue = getUavValue(match->astWeUav[i]);
+			getUavInfo(match->astWeUav[i]);
 			initUavValueNum++;
 		}
 	}
@@ -1285,6 +1286,20 @@ int UAVAI::getUavValue(UAV & _uav)
 			return map->astUavPrice[i].nValue;
 	}
 	return -1;
+}
+
+void UAVAI::getUavInfo(UAV & _uav)
+{
+	for (int i = 0; i < map->nUavPriceNum; i++)
+	{
+		if (!strcmp(_uav.szType, map->astUavPrice[i].szType))
+		{
+			_uav.nValue = map->astUavPrice[i].nValue;
+			_uav.nCapacity = map->astUavPrice[i].nCapacity;
+			_uav.nCharge = map->astUavPrice[i].nCharge;
+			return;
+		}
+	}
 }
 
 int UAVAI::getBuyNewUavIndex(GOODS & _goods)
