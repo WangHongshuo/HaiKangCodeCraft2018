@@ -444,7 +444,7 @@ int UAVAI::isUavInArea(const Point3 & _p, vector<int>& _uavNo, T &_area)
 	int _No = -1;
 	int _num = 0;
 	getUavMoveScope(_p, _area);
-	T::iterator _it;
+	typename T::iterator _it;
 	for (_it = _area.begin(); _it != _area.end(); _it++)
 	{
 		_No = getMapValue(statusMap, (*_it));
