@@ -87,7 +87,8 @@ enum UAV_ACTION
 	UAV_MOVING,
 	UAV_CATCHING,
 	UAV_DELIVERYING,
-	UAV_ATTACK
+	UAV_ATTACK,
+	UAV_GO_CHARGING
 };
 
 enum ATTACK_TYPE
@@ -124,8 +125,13 @@ struct UAV
 	int nAttackType = ATTACK_TYPE::AT_NULL;
 	bool nIsUpdateMapMark = false;
 	bool nIsEnemy = false;
-	int nCapacity;
-	int nCharge;
+	int nCapacity = 0;
+	int nCharge = 0;
+	bool nIsFullPower = false;
+	bool nIsUavCharging = false;
+	int nLoadGoodsWeight = 0;
+	bool nIsPositionChanged = false;
+	Point3 nMovedFeature;
 };
 
 struct UAV_PRICE
@@ -191,8 +197,9 @@ struct GOODSSTATUS
 	int     nCatchedUavNo = -1;
 	deque<bool> nIsRejectUav;
 	bool isRejectedByHome = false;
-	int nPathLength = -1;
+	int nPathLength = 0;
 	vector<Point3> nPath;
+	int nCostPower = -1;
 };
 
 struct MATCH_STATUS

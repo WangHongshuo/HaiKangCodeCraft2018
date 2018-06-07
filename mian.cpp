@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 	//Mapinfo 结构体可能很大，不太适合放在栈中，可以定义为全局或者内存分配
 	MAP_INFO            *pstMapInfo;
 	MATCH_STATUS        *pstMatchStatus;
-	FLY_PLANE          *pstFlayPlane;
+	FLY_PLANE          *pstFlyPlane;
 
 	pstMapInfo = (MAP_INFO *)malloc(sizeof(MAP_INFO));
 	if (pstMapInfo == NULL)
@@ -284,15 +284,15 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	pstFlayPlane = (FLY_PLANE *)malloc(sizeof(FLY_PLANE));
-	if (pstFlayPlane == NULL)
+	pstFlyPlane = (FLY_PLANE *)malloc(sizeof(FLY_PLANE));
+	if (pstFlyPlane == NULL)
 	{
 		return -1;
 	}
 
 	memset(pstMapInfo, 0, sizeof(MAP_INFO));
 	memset(pstMatchStatus, 0, sizeof(MATCH_STATUS));
-	memset(pstFlayPlane, 0, sizeof(FLY_PLANE));
+	memset(pstFlyPlane, 0, sizeof(FLY_PLANE));
 
 	nRet = ParserMapInfo(pRecvBuffer + SOCKET_HEAD_LEN, pstMapInfo);
 	if (nRet != 0)
@@ -301,16 +301,16 @@ int main(int argc, char *argv[])
 	}
 
 	// 第一次把无人机的初始赋值给flayplane
-	pstFlayPlane->nPurchaseNum = 0;
-	pstFlayPlane->nUavNum = pstMapInfo->nUavNum;
+	pstFlyPlane->nPurchaseNum = 0;
+	pstFlyPlane->nUavNum = pstMapInfo->nUavNum;
 	pstMatchStatus->nUavWeNum = pstMapInfo->nUavNum;
 	for (int i = 0; i < pstMapInfo->nUavNum; i++)
 	{
 		pstMatchStatus->astWeUav[i] = pstMapInfo->astUav[i];
-		pstFlayPlane->astUav[i] = pstMapInfo->astUav[i];
+		pstFlyPlane->astUav[i] = pstMapInfo->astUav[i];
 	}
 
-	pstAI->initPtr(pstMapInfo, pstMatchStatus, pstFlayPlane);
+	pstAI->initPtr(pstMapInfo, pstMatchStatus, pstFlyPlane);
 	pstAI->initMap();
 	pstAI->setInitUavTarget();
 
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
 
 		//发送飞行计划结构体
 		memset(pSendBuffer, 0, MAX_SOCKET_BUFFER);
-		nRet = CreateFlayPlane(pstFlayPlane, szToken, pSendBuffer, &nLen);
+		nRet = CreateFlayPlane(pstFlyPlane, szToken, pSendBuffer, &nLen);
 		if (nRet != 0)
 		{
 			return nRet;
@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 	free(pSendBuffer);
 	free(pstMapInfo);
 	free(pstMatchStatus);
-	free(pstFlayPlane);
+	free(pstFlyPlane);
 
 	return 0;
 }

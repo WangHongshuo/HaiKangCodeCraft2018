@@ -17,9 +17,9 @@ public:
 	void setPoint(const Point3 &_p);
 	Point3 &operator=(const Point3 &_p);
 	Point3 operator+(const Point3 &_p);
-	friend Point3 operator+(const Point3 &_p1, Point3 &_p2);
+	friend Point3 operator+(const Point3 &_p1, const Point3 &_p2);
 	Point3 operator-(const Point3 &_p);
-	friend Point3 operator-(const Point3 &_p1, Point3 &_p2);
+	friend Point3 operator-(const Point3 &_p1, const Point3 &_p2);
 	bool operator==(const Point3 &_p);
 	bool operator!=(const Point3 &_p);
 

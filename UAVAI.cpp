@@ -96,6 +96,8 @@ void UAVAI::initMap()
 	}
 	statusMap = pathMap;
 	restoredMap = pathMap;
+	if (MAX_PATH_HEIGHT < map->nHLow)
+		MAX_PATH_HEIGHT = map->nHLow;
 	MAX_PATH_HEIGHT += 3;
 	if (MAX_PATH_HEIGHT > map->nHHigh)
 		MAX_PATH_HEIGHT = map->nHHigh;
@@ -192,16 +194,27 @@ void UAVAI::getNextAction()
 
 	setAttackTarget();
 	updateAttackTarget();
+
+	// update goods deliverying path
+	updateGoodsDeliveryingPath();
+
 	// search goods
 	searchGoods();
 
+	updateChargingFlag();
+
 	// get next moving step and copy to plan
 	money = match->nWeValue;
-	moveAllUavByAction(UAV_ACTION::UAV_CATCHING, UAVNum);
 	moveAllUavByAction(UAV_ACTION::UAV_DELIVERYING, UAVNum);
+	moveAllUavByAction(UAV_ACTION::UAV_CATCHING, UAVNum);
 	moveAllUavByAction(UAV_ACTION::UAV_MOVING, UAVNum);
 	moveAllUavByAction(UAV_ACTION::UAV_ATTACK, UAVNum);
+	moveAllUavByAction(UAV_ACTION::UAV_GO_CHARGING, UAVNum);
 	moveAllUavByAction(UAV_ACTION::UAV_STANDBY, UAVNum);
+
+	updateChargingFlag();
+	updatePowerInfo();
+
 	UAVAliveNum = 0;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
@@ -242,6 +255,7 @@ void UAVAI::copyUav(const UAV & _src, UAV & _dst)
 	_dst.nLoadWeight = _src.nLoadWeight;
 	_dst.nStatus = _src.nStatus;
 	_dst.nGoodsNo = _src.nGoodsNo;
+	_dst.nRemainPower = _src.nRemainPower;
 }
 
 int UAVAI::getMapValue(const vector<vector<vector<int>>>& _array, const Point3 & _p)
@@ -275,8 +289,14 @@ void UAVAI::moving(UAV & _uav)
 {
 	moveAction = -1;
 	// save uav.nPos
-	tmpPoint_1 = _uav.nPos;
+	Point3 _tmpPoint_1;
 	_uav.nIsMoved = true;
+	// if uav is charging
+	if (_uav.nIsUavCharging && !_uav.nIsFullPower && _uav.nAction != UAV_ACTION::UAV_ATTACK)
+	{
+		updateWeUavMark(_uav);
+		return;
+	}
 	// if uav.action is standby, check environment
 	if (_uav.nAction == UAV_ACTION::UAV_STANDBY)
 	{
@@ -319,16 +339,16 @@ void UAVAI::moving(UAV & _uav)
 			{
 				if (match->astGoods[i].nNO == _uav.nGoodsTarget)
 				{
-					tmpPoint_2 = match->astGoods[i].nStartPos;
-					tmpPoint_2.z = map->nHLow - 1;
+					_tmpPoint_1 = match->astGoods[i].nStartPos;
+					_tmpPoint_1.z = map->nHLow - 1;
 					if (match->astGoods[i].nState != 0 ||
-						(getMapValue(statusMap, tmpPoint_2) >= 1000 && _uav.nPos.z >= map->nHLow) ||
+						(getMapValue(statusMap, _tmpPoint_1) >= 1000 && _uav.nPos.z >= map->nHLow) ||
 						match->astGoods[i].nLeftTime < _uav.nPathLength - _uav.nCurrentPathIndex)
 					{
 						goodsStatus[match->astGoods[i].nNO].nIsRejectUav[_uav.nNO] = true;
-						tmpPoint_2.z = map->nHLow + 2;
+						_tmpPoint_1.z = map->nHLow + 2;
 						clearUavPath(_uav);
-						_uav.nTarget = tmpPoint_2;
+						_uav.nTarget = _tmpPoint_1;
 						getPath(_uav);
 						updateWeUavMark(_uav);
 						return;
@@ -350,15 +370,27 @@ void UAVAI::moving(UAV & _uav)
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
 		if (_uav.nAction == UAV_ACTION::UAV_CATCHING)
 		{
+			int _goodsNo;
 			for (int i = 0; i < match->nGoodsNum; i++)
 			{
-				if (match->astGoods[i].nNO == _uav.nGoodsTarget)
+				_goodsNo = match->astGoods[i].nNO;
+				if (_goodsNo == _uav.nGoodsTarget)
 				{
 					match->astGoods[i].nState = 1;
+					_uav.nCurrentPathIndex = -1;
+					if (goodsStatus[_goodsNo].nPathLength > 0)
+					{
+						_uav.nPath.swap(goodsStatus[_goodsNo].nPath);
+						_uav.nPathLength = goodsStatus[_goodsNo].nPathLength;
+					}
+					else
+					{
+						clearUavPath(_uav);
+						_uav.nTarget = match->astGoods[i].nEndPos;
+						getPath(_uav);
+					}
 					_uav.nGoodsNo = _uav.nGoodsTarget;
-					clearUavPath(_uav);
-					_uav.nTarget = match->astGoods[i].nEndPos;
-					getPath(_uav);
+					_uav.nLoadGoodsWeight = match->astGoods[i].nWeight;
 					_uav.nAction = UAV_ACTION::UAV_DELIVERYING;
 					break;
 				}
@@ -366,15 +398,22 @@ void UAVAI::moving(UAV & _uav)
 		}
 		else if (_uav.nAction == UAV_ACTION::UAV_DELIVERYING)
 		{
+			_uav.nRemainPower -= _uav.nLoadGoodsWeight;
 			clearUavPath(_uav);
 			_uav.nTarget.setPoint(_uav.nPos);
-			_uav.nTarget.z = map->nHLow + 2;
+			_uav.nTarget.z = MAX_PATH_HEIGHT;
 			getPath(_uav);
 			_uav.nAction = UAV_ACTION::UAV_MOVING;
 			for (int i = 0; i < MAX_GOODS_NUM; i++)
 			{
 				goodsStatus[i].nIsRejectUav[_uav.nNO] = false;
 			}
+		}
+		else if (_uav.nAction == UAV_ACTION::UAV_GO_CHARGING)
+		{
+			_uav.nIsUavCharging = true;
+			_uav.nIsFullPower = false;
+			clearUavPath(_uav);
 		}
 		else
 		{
@@ -386,7 +425,7 @@ void UAVAI::moving(UAV & _uav)
 		clearUavPath(_uav);
 	}
 	// if the position changed, update map marks
-	if (tmpPoint_1 != _uav.nPos && moveAction != MOVE_ACTION::M_NEWPATH)
+	if (moveAction != MOVE_ACTION::M_NEWPATH)
 	{
 		updateWeUavMark(_uav);
 	}
@@ -412,6 +451,8 @@ void UAVAI::updateWeUavMark(UAV & _uav)
 	// if the position had changed
 	if (_uav.nPos != _uav.nLastPos)
 	{
+		_uav.nMovedFeature = _uav.nPos + _uav.nLastPos;
+		_uav.nIsPositionChanged = true;
 		tmpMark_2 = getMapValue(statusMap, _uav.nLastPos);
 		if (tmpMark_2 == _uav.nNO)
 		{
@@ -421,6 +462,12 @@ void UAVAI::updateWeUavMark(UAV & _uav)
 		setMapValue(statusMap, _uav.nPos, _uav.nNO);
 		_uav.nLastPos = _uav.nPos;
 	}
+	else
+	{
+		_uav.nMovedFeature.setPoint(0, 0, 0);
+		_uav.nIsPositionChanged = false;
+	}
+	setMapValue(statusMap, map->nParkingPos, -1);
 }
 
 int UAVAI::getMoveDirection(UAV & _uav)
@@ -434,6 +481,14 @@ int UAVAI::getMoveDirection(UAV & _uav)
 		else
 			return MOVE_DIRECTION::M_DOWNWARD;
 	}
+}
+
+bool UAVAI::isPathCross(const UAV & _dodgeUav, const Point3 & _uavPos, const Point3 & _uavNextPos)
+{
+	if (_uavPos + _uavNextPos == _dodgeUav.nMovedFeature)
+		return true;
+	else
+		return false;
 }
 
 template<typename T>
@@ -495,25 +550,49 @@ int UAVAI::fixDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV &_uav)
 	}
 	else
 	{
-		int _curIdx = _dodgeUav.nCurrentPathIndex;
-		if (_dodgeUav.nIsMoved && _dodgeUav.nPath[_curIdx] == _uav.nPos)
+		if (_dodgeUav.nAction == UAV_ACTION::UAV_STANDBY)
 		{
-			if (_curIdx - 1 >= 0)
+			fixDodgeArea(_area, _dodgeUav.nPos);
+			return 0;
+		}
+		int _dCurIdx = _dodgeUav.nCurrentPathIndex;
+		int _cCurIdx = _uav.nCurrentPathIndex;
+		if (_dodgeUav.nIsPositionChanged )
+		{
+			fixDodgeArea(_area, _dodgeUav.nPos);
+			if (_dCurIdx >= 0)
 			{
-				fixDodgeArea(_area, _dodgeUav.nPath[_curIdx - 1]);
+				if (_dodgeUav.nPath[_dCurIdx] == _uav.nPos)
+				{
+					if (_dCurIdx - 1 >= 0)
+					{
+						fixDodgeArea(_area, _dodgeUav.nPath[_dCurIdx - 1]);
+					}
+					else
+					{
+						fixDodgeArea(_area, _dodgeUav.nFrom);
+					}
+					return 1;
+				}
+			}
+			if (_cCurIdx >= 0)
+			{
+				if (isPathCross(_dodgeUav, _uav.nPos, _uav.nPath[_cCurIdx]))
+					return 1;
+				else
+					return 0;
 			}
 			else
 			{
-				fixDodgeArea(_area, _dodgeUav.nFrom);
+				return 0;
 			}
-			return 1;
 		}
 		else
 		{
 			fixDodgeArea(_area, _dodgeUav.nPos);
-			if (_curIdx + 1 <= _dodgeUav.nPathLength - 1)
+			if (_dCurIdx + 1 <= _dodgeUav.nPathLength - 1)
 			{
-				if (_dodgeUav.nPath[_curIdx + 1] == _uav.nPos)
+				if (_dodgeUav.nPath[_dCurIdx + 1] == _uav.nPos)
 				{
 					return 1;
 				}
@@ -714,6 +793,7 @@ int UAVAI::environmentAware(UAV & _uav)
 {
 	int _uavNum = 0;
 	int _isDodge = 0;
+	Point3 _tmpPoint;
 	// uav without valid path
 	if (_uav.nAction == UAV_ACTION::UAV_STANDBY ||
 		(_uav.nAction == UAV_ACTION::UAV_ATTACK && !_uav.nIsGetPath))
@@ -748,10 +828,8 @@ int UAVAI::environmentAware(UAV & _uav)
 					_uav.nIsMoved = true;
 				}
 			}
-			updateWeUavMark(_uav);
-			return -1;
 		}
-		// don't move
+		updateWeUavMark(_uav);
 		return -1;
 	}
 	// next step map mark
@@ -783,8 +861,8 @@ int UAVAI::environmentAware(UAV & _uav)
 		doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
 		if (!dodgePosition.empty())
 		{
-			tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
-			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+			_tmpPoint = getBestDodgePositon(dodgePosition, _uav);
+			uavDodgeAndGetNewPath(_uav, _tmpPoint);
 			return MOVE_ACTION::M_NEWPATH;
 		}
 		else
@@ -847,8 +925,8 @@ int UAVAI::environmentAware(UAV & _uav)
 		doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
 		if (!dodgePosition.empty())
 		{
-			tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
-			uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+			_tmpPoint = getBestDodgePositon(dodgePosition, _uav);
+			uavDodgeAndGetNewPath(_uav, _tmpPoint);
 			return MOVE_ACTION::M_NEWPATH;
 		}
 		else
@@ -911,8 +989,8 @@ int UAVAI::environmentAware(UAV & _uav)
 				doubleCheckDodgeArea(dodgePosition, _uav.nNO, CHECK_OPT::CO_ENEMY);
 				if (!dodgePosition.empty())
 				{
-					tmpPoint_4 = getBestDodgePositon(dodgePosition, _uav);
-					uavDodgeAndGetNewPath(_uav, tmpPoint_4);
+					_tmpPoint = getBestDodgePositon(dodgePosition, _uav);
+					uavDodgeAndGetNewPath(_uav, _tmpPoint);
 					return MOVE_ACTION::M_NEWPATH;
 				}
 				else
@@ -1042,14 +1120,14 @@ bool UAVAI::getPath(const Point3 & _from, const Point3 & _to, vector<Point3>& _p
 bool UAVAI::setUavVirticalPath(const Point3 & _from, const Point3 & _to, vector<Point3> &_path, int &_pathLength)
 {
 	Point3 _tmpFrom = _from;
+	int _newPathLength = abs(_to.z - _tmpFrom.z);
+	int _lastPathLength = _pathLength;
 	if (_tmpFrom.x == _to.x && _tmpFrom.y == _to.y)
 	{
 		if (_tmpFrom.z == _to.z)
 		{
 			return true;
 		}
-		int _newPathLength = abs(_to.z - _tmpFrom.z);
-		int _lastPathLength = _pathLength;
 		_pathLength += _newPathLength;
 		_path.resize(_pathLength);
 		for (int i = 0; i < _newPathLength; i++)
@@ -1170,6 +1248,7 @@ void UAVAI::clearUavPath(UAV & _uav)
 		_uav.nAction = UAV_ACTION::UAV_STANDBY;
 	}
 	_uav.nGoodsTarget = -1;
+	_uav.nLoadGoodsWeight = 0;
 }
 
 void UAVAI::buyNewUav()
@@ -1336,6 +1415,8 @@ void UAVAI::searchGoods()
 			continue;
 		if (_uav->nAction == UAV_ACTION::UAV_ATTACK)
 			continue;
+		if (_uav->nAction == UAV_ACTION::UAV_GO_CHARGING)
+			continue;
 		if (_uav->nAction == UAV_ACTION::UAV_CATCHING)
 		{
 			_goods = &(match->astGoods[getGoodsIndexByNo(_uav->nGoodsTarget)]);
@@ -1360,6 +1441,19 @@ void UAVAI::searchGoods()
 			tmpGoodsPath.resize(0);
 			_tmpPathLen = 0;
 
+			if (goodsStatus[_goodsNo].nCostPower > _uav->nRemainPower)
+			{
+				if (j == match->nGoodsNum - 1 && !_isGetValidPath)
+				{
+					if (_uav->nRemainPower == _uav->nCapacity)
+						continue;
+					clearUavPath(*_uav);
+					_uav->nTarget = map->nParkingPos;
+					getPath(*_uav);
+					_uav->nAction = UAV_ACTION::UAV_GO_CHARGING;
+				}
+				continue;
+			}
 			if (goodsStatus[_goodsNo].nCatchedUavNo != -1)
 				continue;
 			if (goodsStatus[_goodsNo].nIsRejectUav[i])
@@ -1408,6 +1502,22 @@ void UAVAI::searchGoods()
 		_uav->nFrom = _uav->nPos;
 		_uav->nCurrentPathIndex = -1;
 		_uav->nIsGetPath = true;
+	}
+}
+
+void UAVAI::updateGoodsDeliveryingPath()
+{
+	int _goodsNo;
+	GOODS *_goods = NULL;
+	for (int i = 0; i < match->nGoodsNum; i++)
+	{
+		_goodsNo = match->astGoods[i].nNO;
+		_goods = &(match->astGoods[i]);
+		if (goodsStatus[_goodsNo].nPathLength <= 0)
+		{
+			getPath(_goods->nStartPos, _goods->nEndPos, goodsStatus[_goodsNo].nPath, goodsStatus[_goodsNo].nPathLength);
+			goodsStatus[_goodsNo].nCostPower = _goods->nWeight*(goodsStatus[_goodsNo].nPathLength + 1);
+		}
 	}
 }
 
@@ -1479,4 +1589,50 @@ void UAVAI::updateAttackTarget()
 			return;
 		}
 	}
+}
+
+void UAVAI::updatePowerInfo()
+{
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		if (match->astWeUav[i].nIsCrash)
+			continue;
+		else if (match->astWeUav[i].nIsUavCharging)
+			chargeUav(match->astWeUav[i]);
+		else if (match->astWeUav[i].nAction == UAV_ACTION::UAV_DELIVERYING)
+			dischargeUav(match->astWeUav[i]);
+		else
+			continue;
+	}
+}
+
+void UAVAI::updateChargingFlag()
+{
+	for (int i = 0; i < match->nUavWeNum; i++)
+	{
+		if (match->astWeUav[i].nIsCrash)
+			continue;
+		else if (match->astWeUav[i].nPos == map->nParkingPos)
+			match->astWeUav[i].nIsUavCharging = true;
+		else
+			match->astWeUav[i].nIsUavCharging = false;
+	}
+}
+
+void UAVAI::chargeUav(UAV & _uav)
+{
+	_uav.nIsFullPower = false;
+	_uav.nRemainPower += _uav.nCharge;
+	if (_uav.nRemainPower >= _uav.nCapacity)
+	{
+		_uav.nRemainPower = _uav.nCapacity;
+		_uav.nIsFullPower = true;
+	}
+}
+
+void UAVAI::dischargeUav(UAV & _uav)
+{
+	_uav.nRemainPower -= _uav.nLoadGoodsWeight;
+	if (_uav.nRemainPower < 0)
+		_uav.nRemainPower = 0;
 }

@@ -49,7 +49,7 @@ bool Point3::operator!=(const Point3 & _p)
 		return false;
 }
 
-Point3 operator+(const Point3 & _p1, Point3 & _p2)
+Point3 operator+(const Point3 & _p1, const Point3 & _p2)
 {
 	Point3 _temp;
 	_temp.x = _p1.x + _p2.x;
@@ -58,7 +58,7 @@ Point3 operator+(const Point3 & _p1, Point3 & _p2)
 	return _temp;
 }
 
-Point3 operator-(const Point3 & _p1, Point3 & _p2)
+Point3 operator-(const Point3 & _p1, const Point3 & _p2)
 {
 	Point3 _temp;
 	_temp.x = _p1.x - _p2.x;

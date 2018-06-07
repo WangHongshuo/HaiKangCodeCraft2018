@@ -55,10 +55,10 @@ private:
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLY_PLANE *plan = NULL;
-	Point3 tmpPoint_1; // @ in moving();
-	Point3 tmpPoint_2; // @ in moving();
+	Point3 tmpPoint_1; // @ in moving(); del
+	Point3 tmpPoint_2; // @ in moving(); del
 	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
-	Point3 tmpPoint_4; // @ in environmentAware();
+	Point3 tmpPoint_4; // @ in environmentAware(); del
 	Point3 tmpPoint_5; // @ in getUavMoveScope();
 	Point3 enemyParkingPos;
 	vector<int> uavNo;
@@ -95,6 +95,7 @@ private:
 	// environment-aware
 	int environmentAware(UAV &_uav);
 	int getMoveDirection(UAV &_uav);
+	bool isPathCross(const UAV &_dodgeUav, const Point3 &_uavPos, const Point3 &_uavNextPos);
 	template<typename T>
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo, T &_area);
 	bool isUavInArea(const Point3 &_p, int & _ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
@@ -128,10 +129,16 @@ private:
 	int getBuyNewUavIndex(GOODS &_goods);
 	// search goods
 	void searchGoods();
+	void updateGoodsDeliveryingPath();
 	int getGoodsIndexByNo(int _No);
 	// attacker
 	void setAttackTarget();
 	void updateAttackTarget();
+	// power
+	void updatePowerInfo();
+	void updateChargingFlag();
+	void chargeUav(UAV &_uav);
+	void dischargeUav(UAV &_uav);
 };
 
 #endif // !__UAVAI_H__

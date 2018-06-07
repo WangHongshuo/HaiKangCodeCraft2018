@@ -813,6 +813,7 @@ int CreateFlayPlane(FLY_PLANE *pstPlane, char *szToken, char *pBuffer, int *pLen
 		cJSON_AddItemToObject(pUav, "x", cJSON_CreateNumber(pstPlane->astUav[i].nPos.x));
 		cJSON_AddItemToObject(pUav, "y", cJSON_CreateNumber(pstPlane->astUav[i].nPos.y));
 		cJSON_AddItemToObject(pUav, "z", cJSON_CreateNumber(pstPlane->astUav[i].nPos.z));
+		cJSON_AddItemToObject(pUav, "remain_electricity", cJSON_CreateNumber(pstPlane->astUav[i].nRemainPower));
 		cJSON_AddItemToObject(pUav, "goods_no", cJSON_CreateNumber(pstPlane->astUav[i].nGoodsNo));
 	}
 
