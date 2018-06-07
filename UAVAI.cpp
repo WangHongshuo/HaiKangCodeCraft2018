@@ -382,6 +382,7 @@ void UAVAI::moving(UAV & _uav)
 					{
 						_uav.nPath.swap(goodsStatus[_goodsNo].nPath);
 						_uav.nPathLength = goodsStatus[_goodsNo].nPathLength;
+						_uav.nTarget = match->astGoods[i].nEndPos;
 					}
 					else
 					{
