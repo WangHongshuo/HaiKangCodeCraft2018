@@ -87,8 +87,9 @@ private:
 	template<typename T>
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo, T &_area);
 	bool isUavInArea(const Point3 &_p, int & _ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
-	int fixDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV & _uav);
-	void fixDodgeArea(list<Point3> &_area, const Point3 &_removedPoint);
+	int fixStaticDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV & _uav, const Point3 & _center);
+	int fixDynamicDodgeArea(list<Point3>& _area, UAV & _dodgeUav, UAV & _uav, const Point3 & _center);
+	void removePointInDodgeArea(list<Point3> &_area, const Point3 &_removedPoint);
 	void doubleCheckDodgeArea(list<Point3>& _area, int &_ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
 	Point3 getBestDodgePositon(list<Point3> &_area, UAV &_uav);
 	bool isPositionInMap(const Point3 &_p);
