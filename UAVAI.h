@@ -26,7 +26,6 @@ public:
 	~UAVAI();
 	enum AREA_OBJ { IS_OUTSIDE = -5, IS_BUILDING, IS_FOG, IS_ENEMY, IS_NULL };
 	enum MOVE_ACTION { M_STANDBY, M_NEWPATH, M_NORMAL, M_MOVE_ALLY };
-	enum MOVE_DIRECTION { M_UPWARD, M_DOWNWARD, M_HORIZONTAL };
 	enum CHECK_OPT { CO_ALL, CO_ALLY, CO_ENEMY };
 	void initPtr(MAP_INFO * _map, MATCH_STATUS * _match, FLY_PLANE * _flayPlane);
 	void initMap();
@@ -48,24 +47,16 @@ private:
 	int moveAction = -1;
 	int cheapestUavIndex = 0;
 	int mostExpensiveUavIndex = 0;
-	int uavMoveDirection = -1;
 	bool isInitPtr = false;
 	UAV *pEnemyUav = NULL;
 	UAV *pAllyUav = NULL;
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLY_PLANE *plan = NULL;
-	Point3 tmpPoint_1; // @ in moving(); del
-	Point3 tmpPoint_2; // @ in moving(); del
-	Point3 tmpPoint_3; // @ in isEnemyUavInArea();
-	Point3 tmpPoint_4; // @ in environmentAware(); del
-	Point3 tmpPoint_5; // @ in getUavMoveScope();
+	Point3 tmpPoint_1; // @ in getUavMoveScope();
 	Point3 enemyParkingPos;
 	vector<int> uavNo;
 	list<Point3> dodgePosition; // @ in environmentAware();
-	list<Point3>::iterator it_1; // @ in fixDodgeArea();
-	list<Point3>::iterator it_2; // @ in doubleCheckDodgeArea();
-	list<Point3>::iterator it_3; // @ in getBestDodgePositon();
 	vector<Point3> MOVE_DIRECTION_DELTA;
 	vector<Point3> tmpUavScope_1; // @ in bool isUavInArea();
 	vector<Point3> tmpUavMoveScope_2;
@@ -94,7 +85,6 @@ private:
 	void updateWeUavMark(UAV &_uav);
 	// environment-aware
 	int environmentAware(UAV &_uav);
-	int getMoveDirection(UAV &_uav);
 	bool isPathCross(const UAV &_dodgeUav, const Point3 &_uavPos, const Point3 &_uavNextPos);
 	template<typename T>
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo, T &_area);

@@ -123,7 +123,6 @@ struct UAV
 	int nValue = 0;
 	int nAttackTarget = 0;
 	int nAttackType = ATTACK_TYPE::AT_NULL;
-	bool nIsUpdateMapMark = false;
 	bool nIsEnemy = false;
 	int nCapacity = 0;
 	int nCharge = 0;
