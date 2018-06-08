@@ -115,6 +115,7 @@ struct UAV
 	int nCurrentPathIndex = 0;
 	vector<Point3> nPath;
 	bool nIsCrash = false;
+	bool nIsMoving = false;
 	bool nIsMoved = false;
 	bool nIsGetPath = false;
 	int nGoodsTarget = -1;

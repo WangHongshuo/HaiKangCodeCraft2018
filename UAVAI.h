@@ -33,6 +33,8 @@ public:
 	void getNextAction();
 private:
 	static const int MOVE_DIRECTION_NUM = 10;
+	int CHEAPEST_UAV_INDEX = 0;
+	int MOST_EXPENSIVE_UAV_INDEX = 0;
 	int MAX_PATH_HEIGHT = -1;
 	int MAX_ALIVE_UAV_NUM;
 	int MAX_ATTACKER_UAV_NUM;
@@ -42,11 +44,6 @@ private:
 	int UAVAttackerNum = 0;
 	int UAVNum = -1;
 	int initUavValueNum = 0;
-	int tmpMark_1 = -1; // @ in environmentAware();
-	int tmpMark_2 = -1; // @ in updateWeUavMark();
-	int moveAction = -1;
-	int cheapestUavIndex = 0;
-	int mostExpensiveUavIndex = 0;
 	bool isInitPtr = false;
 	UAV *pEnemyUav = NULL;
 	UAV *pAllyUav = NULL;
@@ -86,6 +83,7 @@ private:
 	// environment-aware
 	int environmentAware(UAV &_uav);
 	bool isPathCross(const UAV &_dodgeUav, const Point3 &_uavPos, const Point3 &_uavNextPos);
+	bool isPathCross(const Point3 &_pA1, const Point3 &_pA2, const Point3 &_pB1, const Point3 &_pB2);
 	template<typename T>
 	int isUavInArea(const Point3 &_p, vector<int> &_uavNo, T &_area);
 	bool isUavInArea(const Point3 &_p, int & _ignoredNo, CHECK_OPT _opt = CHECK_OPT::CO_ALL);
