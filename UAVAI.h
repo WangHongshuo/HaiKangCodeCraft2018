@@ -45,15 +45,12 @@ private:
 	int UAVNum = -1;
 	int initUavValueNum = 0;
 	bool isInitPtr = false;
-	UAV *pEnemyUav = NULL;
-	UAV *pAllyUav = NULL;
 	MAP_INFO *map = NULL;
 	MATCH_STATUS *match = NULL;
 	FLY_PLANE *plan = NULL;
 	Point3 tmpPoint_1; // @ in getUavMoveScope();
 	Point3 enemyParkingPos;
 	vector<int> uavNo;
-	list<Point3> dodgePosition; // @ in environmentAware();
 	vector<Point3> MOVE_DIRECTION_DELTA;
 	vector<Point3> tmpUavScope_1; // @ in bool isUavInArea();
 	vector<Point3> tmpUavMoveScope_2;
@@ -62,7 +59,6 @@ private:
 	vector<Point3> minPath; // @ in setMinUavHorizontalPath();
 	vector<Point3> tmpGoodsPath; // @ in searchGoods();
 	vector<Point3> minGoodsPath; // @ in searchGoods();
-	vector<Point3> availablePoints; // @ in getAvailableAreaPosisiton
 	vector<vector<vector<int>>> pathMap;
 	vector<vector<vector<int>>> statusMap;
 	vector<vector<vector<int>>> restoredMap;
@@ -96,9 +92,7 @@ private:
 	bool isPositionInMap(const Point3 &_p);
 	int getDistanceInScope(const Point3 &_p1, const Point3 &_p2);
 	int getHorizontalDistance(const Point3 &_p1, const Point3 &_p2);
-	Point3 getAvailableAreaPosisiton(const Point3 &_p, UAV &_uav);
 	void uavDodgeAndGetNewPath(UAV &_uav, Point3 &_dodgeDirection);
-	int getEnemyUavIndexByNo(const int &_No);
 	UAV *getUavPtrByNo(int _No);
 	template<typename T>
 	void getUavMoveScope(const Point3  &_center, T& _scope); // @ the center point is not included
