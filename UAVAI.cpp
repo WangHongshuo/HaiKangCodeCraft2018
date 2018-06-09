@@ -376,7 +376,8 @@ void UAVAI::moving(UAV & _uav)
 		// will be locked
 		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
 		{
-			_uav.nCurrentPathIndex--;
+			environmentAware(_uav);
+			updateWeUavMark(_uav);
 			return;
 		}
 		// move to next position
@@ -1382,7 +1383,7 @@ void UAVAI::buyNewUav()
 			}
 
 			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
-				(double(_goods->nValue) / double(_goods->nWeight));
+				         (double(_goods->nValue) / double(_goods->nWeight));
 
 			if (_tmpScores > _maxSocres)
 			{
@@ -1477,6 +1478,7 @@ int UAVAI::getBuyNewUavIndex(GOODS & _goods)
 		_tmpDiff = map->astUavPrice[i].nLoadWeight - _goods.nWeight;
 		if (_tmpDiff >= 0 && _tmpDiff < _minDiff)
 		{
+			_minDiff = _tmpDiff;
 			_minIndex = i;
 		}
 	}
@@ -1507,8 +1509,8 @@ void UAVAI::searchGoods()
 		{
 			_goods = &(match->astGoods[getGoodsIndexByNo(_uav->nGoodsTarget)]);
 			_maxScores = (double(_goods->nValue) / double(_uav->nPathLength - _uav->nCurrentPathIndex)) *
-				(double(_goods->nWeight) / double(_uav->nLoadWeight)) *
-				(double(_goods->nValue) / double(_goods->nWeight));
+				         (double(_goods->nValue) / double(_goods->nWeight))*
+				          (double(_goods->nWeight) / double(_uav->nLoadWeight));
 		}
 		else
 		{
@@ -1560,8 +1562,8 @@ void UAVAI::searchGoods()
 			}
 			// get scores
 			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
-				(double(_goods->nWeight) / double(_uav->nLoadWeight)) *
-				(double(_goods->nValue) / double(_goods->nWeight));
+				         (double(_goods->nValue) / double(_goods->nWeight))*
+				         (double(_goods->nWeight) / double(_uav->nLoadWeight));
 			// save (maybe something wrong)
 			if (_maxScores < _tmpScores)
 			{
@@ -1633,7 +1635,7 @@ void UAVAI::setAttackTarget()
 		{
 			for (int j = 0; j < match->nUavEnemyNum; j++)
 			{
-				if (match->astEnemyUav[j].nPos.z <= 0)
+				if (match->astEnemyUav[j].nPos.z < 0)
 					continue;
 				if (_mostValued < getUavValue(match->astEnemyUav[j]))
 				{
