@@ -150,7 +150,8 @@ void UAVAI::getNextAction()
 	UAVValues = 0;
 	// reset uav.isMoved flag
 	resetUavMovedFlag();
-
+	// update home status
+	updateHomeStatus();
 	// init uav value
 	initUavInfo();
 	// init uav nLastPos
@@ -305,6 +306,22 @@ void UAVAI::moving(UAV & _uav)
 		updateWeUavMark(_uav);
 		return;
 	}
+	if (_uav.nAction == UAV_ACTION::UAV_GO_CHARGING)
+	{
+		if (map->nHomeStatus == HOME_STATUS::HS_TAKEOFF)
+		{
+			updateWeUavMark(_uav);
+			return;
+		}
+	}
+	else
+	{
+		if (map->nHomeStatus == HOME_STATUS::HS_LANDING && _uav.nPos == map->nParkingPos)
+		{
+			updateWeUavMark(_uav);
+			return;
+		}
+	}
 	// path index +1
 	_uav.nCurrentPathIndex++;
 	// check pos
@@ -441,6 +458,41 @@ void UAVAI::moveAllUavByAction(UAV_ACTION _action, int &_uavNum)
 			moving(match->astWeUav[i]);
 		else
 			continue;
+	}
+}
+
+void UAVAI::updateHomeStatus()
+{
+	Point3 _tmpPoint = map->nParkingPos;
+	int _tmpMark;
+	UAV *_pUav = NULL;
+	for (int i = 1; i <= map->nHLow; i++)
+	{
+		_tmpPoint.z = i;
+		_tmpMark = getMapValue(statusMap, _tmpPoint);
+		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
+		{
+			if (_tmpMark < 1000)
+			{
+				_pUav = &(match->astWeUav[_tmpMark]);
+				if (_pUav->nAction == UAV_ACTION::UAV_GO_CHARGING)
+				{
+					map->nHomeStatus = HOME_STATUS::HS_LANDING;
+					return;
+				}
+				else if (_pUav->nAction == UAV_ACTION::UAV_STANDBY)
+				{
+					continue;
+				}
+				else
+				{
+					map->nHomeStatus = HOME_STATUS::HS_TAKEOFF;
+					return;
+				}
+			}
+			map->nHomeStatus = HOME_STATUS::HS_FREE;
+			return;
+		}
 	}
 }
 
@@ -1562,6 +1614,8 @@ void UAVAI::searchGoods()
 				{
 					if (_uav->nRemainPower == _uav->nCapacity)
 						continue;
+					if (_uav->nPos == map->nParkingPos)
+						continue;
 					clearUavPath(*_uav);
 					_uav->nTarget = map->nParkingPos;
 					getPath(*_uav);
@@ -1742,6 +1796,8 @@ void UAVAI::chargeUav(UAV & _uav)
 	{
 		_uav.nRemainPower = _uav.nCapacity;
 		_uav.nIsFullPower = true;
+		if (_uav.nAction == UAV_ACTION::UAV_GO_CHARGING)
+			_uav.nAction = UAV_ACTION::UAV_STANDBY;
 	}
 }
 

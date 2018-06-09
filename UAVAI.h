@@ -79,6 +79,7 @@ private:
 	void resetUavMovedFlag();
 	void moving(UAV &_uav);
 	void moveAllUavByAction(UAV_ACTION _action, int &_uavNum);
+	void updateHomeStatus();
 	void updateWeUavMark(UAV &_uav);
 	// environment-aware
 	int environmentAware(UAV &_uav);

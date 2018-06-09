@@ -143,10 +143,13 @@ struct UAV_PRICE
 	int     nCharge;
 };
 
-/** @struct
- * 	@brief
- *	@note
- */
+enum HOME_STATUS
+{
+	HS_FREE,
+	HS_TAKEOFF,
+	HS_LANDING,
+	HS_BLOCKED
+};
 struct MAP_INFO
 {
 	int     nMapX;
@@ -166,6 +169,7 @@ struct MAP_INFO
 	UAV     astUav[MAX_UAV_NUM];
 	int     nUavPriceNum;
 	UAV_PRICE   astUavPrice[MAX_UAV_PRICE_NUM];
+	int nHomeStatus = HOME_STATUS::HS_FREE;
 };
 
 struct FLY_PLANE
