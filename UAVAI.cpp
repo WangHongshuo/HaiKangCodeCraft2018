@@ -470,7 +470,7 @@ void UAVAI::updateHomeStatus()
 	{
 		_tmpPoint.z = i;
 		_tmpMark = getMapValue(statusMap, _tmpPoint);
-		if (_tmpMark == AREA_OBJ::IS_NULL || _tmpMark == AREA_OBJ::IS_FOG)
+		if (_tmpMark != AREA_OBJ::IS_NULL && _tmpMark != AREA_OBJ::IS_FOG)
 		{
 			if (_tmpMark < 1000)
 			{
@@ -490,10 +490,9 @@ void UAVAI::updateHomeStatus()
 					return;
 				}
 			}
-			map->nHomeStatus = HOME_STATUS::HS_FREE;
-			return;
 		}
 	}
+	map->nHomeStatus = HOME_STATUS::HS_FREE;
 }
 
 void UAVAI::updateWeUavMark(UAV & _uav)
@@ -979,6 +978,8 @@ int UAVAI::environmentAware(UAV & _uav)
 			// if there is enemy uav exist
 			if (uavNo[i] >= 1000)
 			{
+				if (_uav.nAction == UAV_ACTION::UAV_ATTACK)
+					continue;
 				pEnemyUav = getUavPtrByNo(uavNo[i]);
 				_isDodge += fixDynamicDodgeArea(dodgePosition, *pEnemyUav, _uav, _uav.nPos);
 			}
@@ -1115,6 +1116,8 @@ int UAVAI::environmentAware(UAV & _uav)
 				// if there is enemy uav exist
 				if (uavNo[i] >= 1000)
 				{
+					if (_uav.nAction == UAV_ACTION::UAV_ATTACK)
+						continue;
 					_isNextStepGood = false;
 					break;
 				}
@@ -1141,6 +1144,8 @@ int UAVAI::environmentAware(UAV & _uav)
 					// if there is enemy uav exist
 					if (uavNo[i] >= 1000)
 					{
+						if (_uav.nAction == UAV_ACTION::UAV_ATTACK)
+							continue;
 						pEnemyUav = getUavPtrByNo(uavNo[i]);
 						_isDodge += fixDynamicDodgeArea(dodgePosition, *pEnemyUav, _uav, _uav.nPath[_uav.nCurrentPathIndex]);
 					}

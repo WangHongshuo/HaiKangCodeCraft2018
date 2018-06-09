@@ -123,7 +123,7 @@ struct UAV
 	Point3 nLastPos;
 	int nValue = 0;
 	int nAttackTarget = 0;
-	int nAttackType = ATTACK_TYPE::AT_NULL;
+	ATTACK_TYPE nAttackType = ATTACK_TYPE::AT_NULL;
 	bool nIsEnemy = false;
 	int nCapacity = 0;
 	int nCharge = 0;
@@ -169,7 +169,7 @@ struct MAP_INFO
 	UAV     astUav[MAX_UAV_NUM];
 	int     nUavPriceNum;
 	UAV_PRICE   astUavPrice[MAX_UAV_PRICE_NUM];
-	int nHomeStatus = HOME_STATUS::HS_FREE;
+	HOME_STATUS nHomeStatus = HOME_STATUS::HS_FREE;
 };
 
 struct FLY_PLANE
