@@ -1567,6 +1567,8 @@ void UAVAI::searchGoods()
 			// save (maybe something wrong)
 			if (_maxScores < _tmpScores)
 			{
+				if (_uav->nAction == UAV_ACTION::UAV_CATCHING)
+					goodsStatus[_uav->nGoodsTarget].nCatchedUavNo = -1;
 				goodsStatus[_goodsNo].nIsRejectUav[i] = true;
 				_bestGoodsIndex = j;
 				_maxScores = _tmpScores;
