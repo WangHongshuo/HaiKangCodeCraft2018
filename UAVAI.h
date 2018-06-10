@@ -77,6 +77,7 @@ private:
 	void moveAllUavByAction(UAV_ACTION _action, int &_uavNum);
 	void updateHomeStatus();
 	void updateWeUavMark(UAV &_uav);
+	void changeUavAction(UAV_ACTION _from, UAV_ACTION _to);
 	// environment-aware
 	int environmentAware(UAV &_uav);
 	bool isPathCross(const UAV &_dodgeUav, const Point3 &_uavPos, const Point3 &_uavNextPos);
