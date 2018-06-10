@@ -1392,6 +1392,7 @@ void UAVAI::buyNewUav()
 				_isGetValidPath = true;
 				_bestGoodsNo = _goodsNo;
 				_bestGoodsIndex = i;
+				_maxSocres = _tmpScores;
 			}
 		}
 
@@ -1411,8 +1412,8 @@ void UAVAI::buyNewUav()
 				match->astWeUav[UAVNum + _purchaseNum].nCurrentPathIndex = -1;
 				match->astWeUav[UAVNum + _purchaseNum].nIsGetPath = true;
 				match->astWeUav[UAVNum + _purchaseNum].nGoodsTarget = _bestGoodsNo;
-				goodsStatus[_goodsNo].nCatchedUavNo = UAVNum + _purchaseNum;
-				goodsStatus[_goodsNo].nIsRejectUav[UAVNum + _purchaseNum] = true;
+				goodsStatus[_bestGoodsNo].nCatchedUavNo = UAVNum + _purchaseNum;
+				goodsStatus[_bestGoodsNo].nIsRejectUav[UAVNum + _purchaseNum] = true;
 				_purchaseNum++;
 			}
 		}
@@ -1528,7 +1529,6 @@ void UAVAI::searchGoods()
 			_goodsNo = _goods->nNO;
 			tmpGoodsPath.resize(0);
 			_tmpPathLen = 0;
-
 			if (goodsStatus[_goodsNo].nCostPower > _uav->nRemainPower)
 			{
 				if (j == match->nGoodsNum - 1 && !_isGetValidPath)
@@ -1567,7 +1567,7 @@ void UAVAI::searchGoods()
 			// save (maybe something wrong)
 			if (_maxScores < _tmpScores)
 			{
-				if (_uav->nAction == UAV_ACTION::UAV_CATCHING)
+				if (_uav->nAction == UAV_ACTION::UAV_CATCHING && _maxScores >= 0)
 					goodsStatus[_uav->nGoodsTarget].nCatchedUavNo = -1;
 				goodsStatus[_goodsNo].nIsRejectUav[i] = true;
 				_bestGoodsIndex = j;
@@ -1627,29 +1627,42 @@ void UAVAI::setAttackTarget()
 {
 	int _mostValuedEnemyNo = -1;
 	int _mostValued = 0;
+	UAV *_pEnemyUav = NULL;
+	UAV *_pAttackerUav = NULL;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
 		if (match->astWeUav[i].nIsCrash)
 			continue;
 		if (match->astWeUav[i].nAction != UAV_ACTION::UAV_ATTACK)
 			continue;
-		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_NULL)
+		_pAttackerUav = &(match->astWeUav[i]);
+		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_UAV)
 		{
-			for (int j = 0; j < match->nUavEnemyNum; j++)
+			_pEnemyUav = getUavPtrByNo(_pAttackerUav->nAttackTarget);
+			if (_pEnemyUav == NULL)
 			{
-				if (match->astEnemyUav[j].nPos.z < 0)
-					continue;
-				if (_mostValued < getUavValue(match->astEnemyUav[j]))
-				{
-					_mostValued = getUavValue(match->astEnemyUav[j]);
-					_mostValuedEnemyNo = match->astEnemyUav[j].nNO;
-				}
+				_pAttackerUav->nAttackTarget = -1;
+				_pAttackerUav->nAttackType = ATTACK_TYPE::AT_NULL;
 			}
-			if (_mostValuedEnemyNo >= 0)
+			else
 			{
-				match->astWeUav[i].nAttackType = ATTACK_TYPE::AT_UAV;
-				match->astWeUav[i].nAttackTarget = _mostValuedEnemyNo;
+				_mostValued = getUavValue(*_pEnemyUav);
 			}
+		}
+		for (int j = 0; j < match->nUavEnemyNum; j++)
+		{
+			if (match->astEnemyUav[j].nPos.z <= 0)
+				continue;
+			if (_mostValued < getUavValue(match->astEnemyUav[j]))
+			{
+				_mostValued = getUavValue(match->astEnemyUav[j]);
+				_mostValuedEnemyNo = match->astEnemyUav[j].nNO;
+			}
+		}
+		if (_mostValuedEnemyNo >= 0)
+		{
+			_pAttackerUav->nAttackType = ATTACK_TYPE::AT_UAV;
+			_pAttackerUav->nAttackTarget = _mostValuedEnemyNo;
 		}
 	}
 }
