@@ -833,6 +833,8 @@ void UAVAI::uavDodgeAndGetNewPath(UAV & _uav, Point3 & _dodgePosition)
 
 UAV * UAVAI::getUavPtrByNo(int _No)
 {
+	if (_No == 999)
+		return nullptr;
 	if (_No >= 1000)
 	{
 		_No %= 1000;
@@ -1667,22 +1669,19 @@ void UAVAI::setAttackTarget()
 		if (match->astWeUav[i].nAction != UAV_ACTION::UAV_ATTACK)
 			continue;
 		_pAttackerUav = &(match->astWeUav[i]);
-		if (match->astWeUav[i].nAttackType == ATTACK_TYPE::AT_UAV)
+		_pEnemyUav = getUavPtrByNo(_pAttackerUav->nAttackTarget + 1000);
+		if (_pEnemyUav == NULL)
 		{
-			_pEnemyUav = getUavPtrByNo(_pAttackerUav->nAttackTarget);
-			if (_pEnemyUav == NULL)
-			{
-				_pAttackerUav->nAttackTarget = -1;
-				_pAttackerUav->nAttackType = ATTACK_TYPE::AT_NULL;
-			}
-			else
-			{
-				_mostValued = getUavValue(*_pEnemyUav);
-			}
+			_pAttackerUav->nAttackTarget = -1;
+			_pAttackerUav->nAttackType = ATTACK_TYPE::AT_NULL;
+		}
+		else
+		{
+			_mostValued = getUavValue(*_pEnemyUav);
 		}
 		for (int j = 0; j < match->nUavEnemyNum; j++)
 		{
-			if (match->astEnemyUav[j].nPos.z <= 0)
+			if (match->astEnemyUav[j].nPos == enemyParkingPos)
 				continue;
 			if (_mostValued < getUavValue(match->astEnemyUav[j]))
 			{
@@ -1712,10 +1711,14 @@ void UAVAI::updateAttackTarget()
 			{
 				if (match->astEnemyUav[j].nNO == match->astWeUav[i].nAttackTarget)
 				{
-					if (match->astEnemyUav[j].nPos.z != -1)
+					if (match->astEnemyUav[j].nPos.x != -1)
 					{
 						match->astWeUav[i].nTarget = match->astEnemyUav[j].nPos;
 						getPath(match->astWeUav[i]);
+						return;
+					}
+					else
+					{
 						return;
 					}
 				}
