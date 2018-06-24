@@ -104,7 +104,7 @@ void UAVAI::initMap()
 
 void UAVAI::setInitUavTarget()
 {
-	// set init target as the center of map (whatever the target obj is)
+	// 设置初始目标点
 	Point3 _center, _tP;
 	_center.setPoint(map->nMapX / 2, map->nMapY / 2, (map->nHLow + map->nHHigh) / 2);
 	while (getMapValue(statusMap, _center) <= -4)
@@ -147,13 +147,13 @@ void UAVAI::setInitUavTarget()
 void UAVAI::getNextAction()
 {
 	UAVValues = 0;
-	// reset uav.isMoved flag
+	// 重置UAV移动Flag（isMoving正在进行移动操作；isMoved移动完成）
 	resetUavMovedFlag();
-	// update home status
+	// 更新停机坪状态
 	updateHomeStatus();
-	// init uav value
+	// 初始化UAV价值（如果有新买的UAV）
 	initUavInfo();
-	// init uav nLastPos
+	// 初始化UAV上次位置
 	if (match->nTime == 1)
 	{
 		initUavLastPos();
@@ -161,7 +161,7 @@ void UAVAI::getNextAction()
 		enemyParkingPos.z = 0;
 	}
 
-	// set enemy uav pos marks
+	// 在statusMap标记敌方UAV
 	for (int i = 0; i < match->nUavEnemyNum; i++)
 	{
 		if (match->astEnemyUav[i].nStatus == UAV_STATUS::UAV_FOG)
@@ -169,7 +169,7 @@ void UAVAI::getNextAction()
 		setMapValue(statusMap, match->astEnemyUav[i].nPos, match->astEnemyUav[i].nNO + 1000);
 	}
 
-	// check uav is alive or not
+	// 检查UAV存活
 	UAVNum = match->nUavWeNum;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
@@ -182,7 +182,7 @@ void UAVAI::getNextAction()
 			continue;
 		}
 	}
-	// check uav attacker
+	// 检查Attacker
 	UAVAttackerNum = 0;
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
@@ -195,10 +195,10 @@ void UAVAI::getNextAction()
 	setAttackTarget();
 	updateAttackTarget();
 
-	// update goods deliverying path
+	// 更新GOODS运送路径（从start到end的路径）
 	updateGoodsDeliveryingPath();
 
-	// search goods
+	// 搜寻货物
 	searchGoods();
 
 	updateChargingFlag();
@@ -208,7 +208,7 @@ void UAVAI::getNextAction()
 	else
 		changeUavAction(UAV_ACTION::UAV_GO_CHARGING_S, UAV_ACTION::UAV_GO_CHARGING);
 
-	// get next moving step and copy to plan
+	// 根据ACTION决定移动优先级
 	money = match->nWeValue;
 	moveAllUavByAction(UAV_ACTION::UAV_DELIVERYING, UAVNum);
 	moveAllUavByAction(UAV_ACTION::UAV_CATCHING, UAVNum);
@@ -236,7 +236,7 @@ void UAVAI::getNextAction()
 
 	buyNewUav();
 
-	// remove enemy uav pos marks
+	// 清除敌方UAV标记
 	for (int i = 0; i < match->nUavEnemyNum; i++)
 	{
 		if (match->astEnemyUav[i].nStatus == UAV_STATUS::UAV_FOG)
@@ -295,24 +295,25 @@ void UAVAI::resetUavMovedFlag()
 void UAVAI::moving(UAV & _uav)
 {
 	int _moveAction = -1;
-	// save uav.nPos
 	Point3 _tmpPoint_1;
 	_uav.nIsMoving = true;
-	// if uav is charging
+	// 如果UAV在充电不移动
 	if (_uav.nIsUavCharging && !_uav.nIsFullPower && _uav.nAction != UAV_ACTION::UAV_ATTACK)
 	{
 		updateWeUavMark(_uav);
 		return;
 	}
-	// if uav.action is standby or doesn't have path, check environment
+	// 如果UAV待机或者没有有效路径，检查周围环境
 	if (!_uav.nIsGetPath)
 	{
 		environmentAware(_uav);
 		updateWeUavMark(_uav);
 		return;
 	}
+	// 如果UAV回停机坪充电或者等待回停机坪
 	if (_uav.nAction == UAV_ACTION::UAV_GO_CHARGING || _uav.nAction == UAV_ACTION::UAV_GO_CHARGING_S)
 	{
+		// 如果停机坪是起飞状态，进行环境感知，防止撞机
 		if (map->nHomeStatus == HOME_STATUS::HS_TAKEOFF)
 		{
 			if(environmentAware(_uav) == -1)
@@ -322,17 +323,18 @@ void UAVAI::moving(UAV & _uav)
 	}
 	else
 	{
+		// 其他状态的飞机如果在停机坪要起飞但停机坪状态为降落，等待降落
 		if (map->nHomeStatus == HOME_STATUS::HS_LANDING && _uav.nPos == map->nParkingPos)
 		{
 			updateWeUavMark(_uav);
 			return;
 		}
 	}
-	// path index +1
 	_uav.nCurrentPathIndex++;
-	// check pos
+	// 检测path
 	if (_uav.nCurrentPathIndex < _uav.nPathLength - 1)
 	{
+		// 移动前进行环境感知
 		_moveAction = environmentAware(_uav);
 		switch (_moveAction)
 		{
@@ -352,7 +354,7 @@ void UAVAI::moving(UAV & _uav)
 			break;
 		}
 
-		// check goods status
+		// 如果在抓取GOODS状态，检测GOODS
 		if (_uav.nAction == UAV_ACTION::UAV_CATCHING)
 		{
 			for (int i = 0; i < match->nGoodsNum; i++)
@@ -378,17 +380,18 @@ void UAVAI::moving(UAV & _uav)
 			}
 		}
 	}
+	// 最后一步
 	else if (_uav.nCurrentPathIndex == _uav.nPathLength - 1)
 	{
-		// will be locked
+		// 可能会锁死
 		if (getMapValue(statusMap, _uav.nPath[_uav.nCurrentPathIndex]) >= 0)
 		{
 			environmentAware(_uav);
 			updateWeUavMark(_uav);
 			return;
 		}
-		// move to next position
 		_uav.nPos = _uav.nPath[_uav.nCurrentPathIndex];
+		// 如果是抓取状态，抓取货物
 		if (_uav.nAction == UAV_ACTION::UAV_CATCHING)
 		{
 			int _goodsNo;
@@ -418,6 +421,7 @@ void UAVAI::moving(UAV & _uav)
 				}
 			}
 		}
+		// 如果是运送状态，放置货物
 		else if (_uav.nAction == UAV_ACTION::UAV_DELIVERYING)
 		{
 			_uav.nRemainPower -= _uav.nLoadGoodsWeight;
@@ -431,6 +435,7 @@ void UAVAI::moving(UAV & _uav)
 				goodsStatus[i].nIsRejectUav[_uav.nNO] = false;
 			}
 		}
+		// 如果是充电，更新充电flag
 		else if (_uav.nAction == UAV_ACTION::UAV_GO_CHARGING)
 		{
 			_uav.nIsUavCharging = true;
@@ -446,7 +451,7 @@ void UAVAI::moving(UAV & _uav)
 	{
 		clearUavPath(_uav);
 	}
-	// if the position changed, update map marks
+	// 更新UAV在statusMap中的标记
 	if (_moveAction != MOVE_ACTION::M_NEWPATH)
 	{
 		updateWeUavMark(_uav);
@@ -468,6 +473,10 @@ void UAVAI::moveAllUavByAction(UAV_ACTION _action, int &_uavNum)
 	}
 }
 
+// 检查停机坪上方的状态
+// 如果有充电状态的飞机，则为降落状态；如果有其他状态的飞机，则为起飞状态；
+// 如果两者都没有，则是FREE状态；如果有敌方UAV，则为堵塞状态（未做）
+ 
 void UAVAI::updateHomeStatus()
 {
 	Point3 _tmpPoint = map->nParkingPos;
@@ -505,7 +514,7 @@ void UAVAI::updateHomeStatus()
 void UAVAI::updateWeUavMark(UAV & _uav)
 {
 	_uav.nIsMoved = true;
-	// if the position had changed
+	// 如果位置变化了，则更新
 	if (_uav.nPos != _uav.nLastPos)
 	{
 		_uav.nMovedFeature = _uav.nPos + _uav.nLastPos;
@@ -811,7 +820,7 @@ bool UAVAI::isPositionInMap(const Point3 & _p)
 
 int UAVAI::getDistanceInScope(const Point3 & _p1, const Point3 & _p2)
 {
-	// the weight of height is set to 2
+	// 高度权值为2
 	return int(pow(_p1.x - _p2.x, 2)) + int(pow(_p1.y - _p2.y, 2)) + int(abs(_p1.z - _p2.z) * 2);
 }
 
@@ -1341,21 +1350,6 @@ bool UAVAI::getHorizontalPath(const Point3 & _from, const Point3 & _to, const in
 		return false;
 }
 
-Point3 UAVAI::getHorizontalMoveDirection(const Point3 & _from, const Point3 & _to)
-{
-	Point3 _direction(0, 0, 0);
-	Point3 _diff(_to.x - _from.x, _to.y - _from.y, 0);
-	if (_diff.x > 0)
-		_direction.x = 1;
-	else if (_diff.x < 0)
-		_direction.x = -1;
-	if (_diff.y > 0)
-		_direction.y = 1;
-	else if (_diff.y < 0)
-		_direction.y = -1;
-	return _direction;
-}
-
 void UAVAI::clearUavPath(UAV & _uav)
 {
 	_uav.nPath.resize(0);
@@ -1413,7 +1407,7 @@ void UAVAI::buyNewUav()
 				goodsStatus[_goodsNo].isRejectedByHome = true;
 				continue;
 			}
-
+			// 价值公式
 			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
 				         (double(_goods->nValue) / double(_goods->nWeight));
 
@@ -1521,13 +1515,12 @@ int UAVAI::getBuyNewUavIndex(GOODS & _goods)
 
 void UAVAI::searchGoods()
 {
-	// Scores = (value / distance) * utilization * (value / weight)
 	double _maxScores, _tmpScores;
 	int _tmpPathLen, _bestGoodsIndex, _goodsNo;
 	UAV *_uav = NULL;
 	GOODS *_goods = NULL;
 	bool _isGetValidPath;
-	// Uav-Oriented
+	// 面向UAV寻找GOODS
 	for (int i = 0; i < match->nUavWeNum; i++)
 	{
 		_uav = &(match->astWeUav[i]);
@@ -1542,6 +1535,7 @@ void UAVAI::searchGoods()
 		if (_uav->nAction == UAV_ACTION::UAV_CATCHING)
 		{
 			_goods = &(match->astGoods[getGoodsIndexByNo(_uav->nGoodsTarget)]);
+			// 价值公式
 			_maxScores = (double(_goods->nValue) / double(_uav->nPathLength - _uav->nCurrentPathIndex)) *
 				         (double(_goods->nValue) / double(_goods->nWeight))*
 				          (double(_goods->nWeight) / double(_uav->nLoadWeight));
@@ -1593,11 +1587,10 @@ void UAVAI::searchGoods()
 				goodsStatus[_goodsNo].nIsRejectUav[i] = true;
 				continue;
 			}
-			// get scores
+			// 价值公式
 			_tmpScores = (double(_goods->nValue) / double(_tmpPathLen)) *
 				         (double(_goods->nValue) / double(_goods->nWeight))*
 				         (double(_goods->nWeight) / double(_uav->nLoadWeight));
-			// save (maybe something wrong)
 			if (_maxScores < _tmpScores)
 			{
 				if (_uav->nAction == UAV_ACTION::UAV_CATCHING && _maxScores >= 0)
@@ -1656,6 +1649,7 @@ int UAVAI::getGoodsIndexByNo(int _No)
 	return -1;
 }
 
+// 以对方价值最高的UAV为目标
 void UAVAI::setAttackTarget()
 {
 	int _mostValuedEnemyNo = -1;

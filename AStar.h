@@ -1,3 +1,5 @@
+// 虽然叫A*但是只是用贪心算法确保每一步都是里目标最近的，想做A*但是时间有限
+
 #ifndef __ASTAR_H__
 #define __ASTAR_H__
 
@@ -12,7 +14,7 @@ using std::pow;
 void setMarkInMap(vector<vector<vector<int>>> &_map, const Point3 &_p, const int &_mark);
 int getMarkInMap(vector<vector<vector<int>>> &_map, const Point3 &_p);
 
-// ������
+// 搜索点
 class SearchPoint
 {
 public:
@@ -27,7 +29,7 @@ private:
 	int getDistance(const Point3 &_from, const Point3 &_to);
 };
 
-// ��������
+// 搜索区域
 class SearchArea
 {
 public:

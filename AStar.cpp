@@ -29,7 +29,7 @@ bool AStar::getPath(vector<Point3>& _path, int &_pathLength)
 	unsigned int _index = 0;
 	while (area[_index].nextPoint != to)
 	{
-		// 如果是死路，恢复path，返回false
+		// 濡傛灉鏄璺紝鎭㈠path锛岃繑鍥瀎alse
 		if (area[_index].isDeadPath)
 		{
 			clearPathMarkInMap(_index + 1);

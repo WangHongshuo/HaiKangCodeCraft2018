@@ -4,7 +4,7 @@
  *
  *	@author		lipengfei
  *	@date		2014/12/24
- *	@note		ÀúÊ·¼ÇÂ¼£º
+ *	@note		å†å²è®°å½•ï¼š
  *	@note		V1.0.0
  *	@warning
  */
@@ -12,12 +12,12 @@
 #define __OSSOCKET_H__
 #include <istream>
 #include <stdio.h>
- // Èç¹ûÊÇlinux £¬¶¨ÒåOS_POSIX
+ // å¦‚æœæ˜¯linux ï¼Œå®šä¹‰OS_POSIX
  //#define OS_POSIX
  //#define OS_WINDOWS
 
 #if defined (WIN32)
- /////////////////////////////////////////////////////////windowsÏÂ
+ /////////////////////////////////////////////////////////windowsä¸‹
 #include<winsock2.h>
 #include <ws2ipdef.h>
 #define OS_WINDOWS
@@ -25,7 +25,7 @@ typedef SOCKET                                  OS_SOCKET;
 #define OS_INVALID_SOCKET                       INVALID_SOCKET
 
 #else
- ///////////////////////////////////////////////////////////////// ÆäËûÏµÍ³
+ ///////////////////////////////////////////////////////////////// å…¶ä»–ç³»ç»Ÿ
 #define OS_POSIX
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -39,29 +39,29 @@ typedef int                                     OS_SOCKET;
 #endif
 
 /** @struct _STRUCT_OS_ADDR_T_
- * 	@brief	µØÖ·½á¹¹
+ * 	@brief	åœ°å€ç»“æ„
  *	@note
  */
 typedef struct _STRUCT_OS_ADDR_T_
 {
 	union
 	{
-		struct sockaddr_in sin4;	/**< IPV4 µØÖ·*/
+		struct sockaddr_in sin4;	/**< IPV4 åœ°å€*/
 	}SA;
 }OS_ADDR_T;
 
 /** @fn		OS_SOCKET OSOpenSocket(int nAf, int nType, int nProto)
- *  @brief	´´½¨Socket
- *	@param	-I	 - int nAf                  Ğ­Òé
- *	@param	-I	 - int nType                ÀàĞÍ
- *	@param	-I	 - int nProto               Ğ­Òé
- *	@return OS_SOCKET                       ¾ä±ú
+ *  @brief	åˆ›å»ºSocket
+ *	@param	-I	 - int nAf                  åè®®
+ *	@param	-I	 - int nType                ç±»å‹
+ *	@param	-I	 - int nProto               åè®®
+ *	@return OS_SOCKET                       å¥æŸ„
  */
 OS_SOCKET OSOpenSocket(int nAf, int nType, int nProto);
 
 /** @fn		void OSCloseSocket(OS_SOCKET hSOcket)
- *  @brief	¹Ø±Õsocket¾ä±ú
- *	@param	-I	 - OS_SOCKET hSOcket        ¾ä±ú
+ *  @brief	å…³é—­socketå¥æŸ„
+ *	@param	-I	 - OS_SOCKET hSOcket        å¥æŸ„
  *	@return void
  */
 void OSCloseSocket(OS_SOCKET hSOcket);
@@ -82,57 +82,57 @@ int OSConnect(OS_SOCKET hSocket, OS_ADDR_T *pstAddr);
  */
 int OSBind(OS_SOCKET hSocket, OS_ADDR_T *pstAddr);
 
-/** @fn     int OSAccept(OS_SOCKET hSocket, OS_ADDR_T *pstAddr, unsigned int nTimeOut¡ê? OS_SOCKET *pCntSocket)
- *  @brief	½ÓÊÜ
- *	@param  -I   - OS_SOCKET hSocket                                ¾ä±ú
- *	@param  -I   - OS_ADDR_T * pstAddr                              µØÖ·
- *	@param  -I   - unsigned int nTimeOut¡ê? OS_SOCKET * pCntSocket   Á´½Ó¾ä±ú
- *	@return int                                                     0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+/** @fn     int OSAccept(OS_SOCKET hSocket, OS_ADDR_T *pstAddr, unsigned int nTimeOutï¿¡? OS_SOCKET *pCntSocket)
+ *  @brief	æ¥å—
+ *	@param  -I   - OS_SOCKET hSocket                                å¥æŸ„
+ *	@param  -I   - OS_ADDR_T * pstAddr                              åœ°å€
+ *	@param  -I   - unsigned int nTimeOutï¿¡? OS_SOCKET * pCntSocket   é“¾æ¥å¥æŸ„
+ *	@return int                                                     0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int OSAccept(OS_SOCKET hSocket, OS_SOCKET *pCntSocket);
 
 /** @fn		int OSMakeAddrByString(int nAf, const char *szAddr, unsigned short nPort, OS_ADDR_T *pstAddr)
- *  @brief	´´½¨µØÖ·
- *	@param	-I	 - int nAf                  µØÖ·×å
- *	@param	-I	 - const char * szAddr      µØÖ·
- *	@param	-I	 - unsigned short nPort     ¶Ë¿Ú
- *	@param	-I	 - OS_ADDR_T * pstAddr      µØÖ·
- *	@return int                             0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	åˆ›å»ºåœ°å€
+ *	@param	-I	 - int nAf                  åœ°å€æ—
+ *	@param	-I	 - const char * szAddr      åœ°å€
+ *	@param	-I	 - unsigned short nPort     ç«¯å£
+ *	@param	-I	 - OS_ADDR_T * pstAddr      åœ°å€
+ *	@return int                             0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int OSMakeAddrByString(int nAf, const char *szAddr, unsigned short nPort, OS_ADDR_T *pstAddr);
 
 /** @fn		int OSSend(OS_SOCKET hSocket, char *pBuf, unsigned int nLen)
- *  @brief	·¢ËÍÊı¾İ
- *	@param	-I	 - OS_SOCKET hSocket        ¾ä±ú
- *	@param	-I	 - char * pBuf              »º´æ
- *	@param	-I	 - unsigned int nLen        ³¤¶È
- *	@return int                             ·µ»Ø·¢ËÍµÄ³¤¶È
+ *  @brief	å‘é€æ•°æ®
+ *	@param	-I	 - OS_SOCKET hSocket        å¥æŸ„
+ *	@param	-I	 - char * pBuf              ç¼“å­˜
+ *	@param	-I	 - unsigned int nLen        é•¿åº¦
+ *	@return int                             è¿”å›å‘é€çš„é•¿åº¦
  */
 int OSSend(OS_SOCKET hSocket, char *pBuf, unsigned int nLen);
 
 /** @fn		int OSRecv(OS_SOCKET hSocket, char *pBuf, int nLen)
- *  @brief	½ÓÊÜÊı¾İ
- *	@param	-I	 - OS_SOCKET hSocket        ¾ä±ú
- *	@param	-I	 - char * pBuf              »º´æ
- *	@param	-I	 - int nLen                 ³¤¶È
- *	@return int                             0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	æ¥å—æ•°æ®
+ *	@param	-I	 - OS_SOCKET hSocket        å¥æŸ„
+ *	@param	-I	 - char * pBuf              ç¼“å­˜
+ *	@param	-I	 - int nLen                 é•¿åº¦
+ *	@return int                             0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int OSRecv(OS_SOCKET hSocket, char *pBuf, int nLen);
 
 /** @fn     int OSCreateSocket(char *szIP, unsigned int nPort, OS_SOCKET *pSocket)
- *  @brief	´´½¨socket
+ *  @brief	åˆ›å»ºsocket
  *	@param  -I   - char * szIP              ip
- *	@param  -I   - unsigned int nPort       ¾ä±ú
+ *	@param  -I   - unsigned int nPort       å¥æŸ„
  *	@param  -O   - OS_SOCKET * pSocket      socket
- *	@return int 0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *	@return int 0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int OSCreateSocket(char *szIP, unsigned int nPort, OS_SOCKET *pSocket);
 
 /** @fn     int OSListenSocket(unsigned int nPort, OS_SOCKET *pSocket)
- *  @brief	¼àÌı¶Ë¿Ú
- *	@param  -I   - unsigned int nPort       ¶Ë¿Ú
- *	@param  -I   - OS_SOCKET * pSocket      ¾ä±ú
- *	@return int                             0±íÊ¾³É¹¦£¬·ñÔòÊ§°Ü
+ *  @brief	ç›‘å¬ç«¯å£
+ *	@param  -I   - unsigned int nPort       ç«¯å£
+ *	@param  -I   - OS_SOCKET * pSocket      å¥æŸ„
+ *	@return int                             0è¡¨ç¤ºæˆåŠŸï¼Œå¦åˆ™å¤±è´¥
  */
 int OSListenSocket(unsigned int nPort, OS_SOCKET *pSocket);
 #endif

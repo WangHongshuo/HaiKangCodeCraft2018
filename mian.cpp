@@ -4,7 +4,7 @@
  *
  *	@author     lipengfei
  *	@date       2018/05/10
- *	@note       ÀúÊ·¼ÇÂ¼£º
+ *	@note       å†å²è®°å½•ï¼š
  *	@note       V1.0.0
  *	@warning
  */
@@ -19,12 +19,12 @@
 #include "UAVAI.h"
 #include "Point3.h"
 
-const int MAX_SOCKET_BUFFER = (1024 * 1024 * 4);       /// ·¢ËÍ½ÓÊÜÊı¾İ×î´ó4M
+const int MAX_SOCKET_BUFFER = (1024 * 1024 * 4);       /// å‘é€æ¥å—æ•°æ®æœ€å¤§4M
 using std::cout;
 using std::endl;
 
 /** @fn     int RecvJuderData(OS_SOCKET hSocket, char *pBuffer)
- *  @brief	½ÓÊÜÊı¾İ
+ *  @brief	æ¥å—æ•°æ®
  *	@param  -I   - OS_SOCKET hSocket
  *	@param  -I   - char * pBuffer
  *	@return int
@@ -36,7 +36,7 @@ int RecvJuderData(OS_SOCKET hSocket, char *pBuffer)
 
 	while (1)
 	{
-		// ½ÓÊÜÍ·²¿³¤¶È
+		// æ¥å—å¤´éƒ¨é•¿åº¦
 		nLen = OSRecv(hSocket, pBuffer + nRecvLen, MAX_SOCKET_BUFFER);
 		if (nLen <= 0)
 		{
@@ -61,7 +61,7 @@ int RecvJuderData(OS_SOCKET hSocket, char *pBuffer)
 
 	while (nRecvLen < (SOCKET_HEAD_LEN + nJsonLen))
 	{
-		// ËµÃ÷Êı¾İ»¹Ã»½ÓÊÜÍê
+		// è¯´æ˜æ•°æ®è¿˜æ²¡æ¥å—å®Œ
 		nLen = OSRecv(hSocket, pBuffer + nRecvLen, MAX_SOCKET_BUFFER);
 		if (nLen <= 0)
 		{
@@ -76,7 +76,7 @@ int RecvJuderData(OS_SOCKET hSocket, char *pBuffer)
 }
 
 /** @fn     int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
- *  @brief	·¢ËÍÊı¾İ
+ *  @brief	å‘é€æ•°æ®
  *	@param  -I   - OS_SOCKET hSocket
  *	@param  -I   - char * pBuffer
  *	@param  -I   - int nLen
@@ -102,7 +102,7 @@ int SendJuderData(OS_SOCKET hSocket, char *pBuffer, int nLen)
 }
 
 /** @fn     void AlgorithmCalculationFun()
- *  @brief	Ñ§ÉúµÄËã·¨¼ÆËã£¬ ²ÎÊıÊ²Ã´µÄ¶¼×Ô¼ºĞ´£¬
+ *  @brief	å­¦ç”Ÿçš„ç®—æ³•è®¡ç®—ï¼Œ å‚æ•°ä»€ä¹ˆçš„éƒ½è‡ªå·±å†™ï¼Œ
  *	@return void
  */
 void  AlgorithmCalculationFun(UAVAI *pstAI)
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 {
 	UAVAI *pstAI = new UAVAI;
 #ifdef OS_WINDOWS
-	// windowsÏÂ£¬ĞèÒª½øĞĞ³õÊ¼»¯²Ù×÷
+	// windowsä¸‹ï¼Œéœ€è¦è¿›è¡Œåˆå§‹åŒ–æ“ä½œ
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
@@ -133,14 +133,14 @@ int main(int argc, char *argv[])
 	char        *pSendBuffer = NULL;
 	int         nLen = 0;
 
-	// ±¾µØµ÷ÊÔÈ¥µôÕâ¸ö
+	// æœ¬åœ°è°ƒè¯•å»æ‰è¿™ä¸ª
 	if (argc != 4)
 	{
 		printf("error arg num\n");
 		return -1;
 	}
 
-	// ½âÎö²ÎÊı
+	// è§£æå‚æ•°
 	strcpy(szIp, argv[1]);
 	nPort = atoi(argv[2]);
 	strcpy(szToken, argv[3]);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
 	// test
 
-	// ¿ªÊ¼Á¬½Ó·şÎñÆ÷
+	// å¼€å§‹è¿æ¥æœåŠ¡å™¨
 	nRet = OSCreateSocket(szIp, (unsigned int)nPort, &hSocket);
 	if (nRet != 0)
 	{
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		return nRet;
 	}
 
-	// ·ÖÅä½ÓÊÜ·¢ËÍÄÚ´æ
+	// åˆ†é…æ¥å—å‘é€å†…å­˜
 	pRecvBuffer = (char*)malloc(MAX_SOCKET_BUFFER);
 	if (pRecvBuffer == NULL)
 	{
@@ -177,15 +177,15 @@ int main(int argc, char *argv[])
 
 	memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
 
-	// ½ÓÊÜÊı¾İ  Á¬½Ó³É¹¦ºó£¬Judger»á·µ»ØÒ»ÌõÏûÏ¢£º
+	// æ¥å—æ•°æ®  è¿æ¥æˆåŠŸåï¼ŒJudgerä¼šè¿”å›ä¸€æ¡æ¶ˆæ¯ï¼š
 	nRet = RecvJuderData(hSocket, pRecvBuffer);
 	if (nRet != 0)
 	{
 		return nRet;
 	}
 	cout << pRecvBuffer << endl;
-	// json ½âÎö
-	// »ñÈ¡Í·²¿
+	// json è§£æ
+	// è·å–å¤´éƒ¨
 	CONNECT_NOTICE  stNotice;
 
 	nRet = ParserConnect(pRecvBuffer + SOCKET_HEAD_LEN, &stNotice);
@@ -194,11 +194,11 @@ int main(int argc, char *argv[])
 		return nRet;
 	}
 
-	// Éú³É±íÃ÷Éí·İµÄjson
+	// ç”Ÿæˆè¡¨æ˜èº«ä»½çš„json
 	TOKEN_INFO  stToken;
 
-	strcpy(stToken.szToken, szToken);  // Èç¹ûÊÇµ÷ÊÔ½×¶Î£¬ÇëÊäÈëÄãµ÷ÊÔµÄtoken£¬ÔÚÎÒµÄ¶ÔÕ½ÖĞ»ñÈ¡£¬
-									   // Êµ¼Ê±ÈÈü£¬²»Òª´«Èëµ÷ÊÔµÄ£¬°´ÕÕdemoĞ´µÄ£¬ÓĞ·şÎñÆ÷µ÷ÓÃ´«Èë¡£
+	strcpy(stToken.szToken, szToken);  // å¦‚æœæ˜¯è°ƒè¯•é˜¶æ®µï¼Œè¯·è¾“å…¥ä½ è°ƒè¯•çš„tokenï¼Œåœ¨æˆ‘çš„å¯¹æˆ˜ä¸­è·å–ï¼Œ
+									   // å®é™…æ¯”èµ›ï¼Œä¸è¦ä¼ å…¥è°ƒè¯•çš„ï¼ŒæŒ‰ç…§demoå†™çš„ï¼Œæœ‰æœåŠ¡å™¨è°ƒç”¨ä¼ å…¥ã€‚
 	strcpy(stToken.szAction, "sendtoken");
 
 	memset(pSendBuffer, 0, MAX_SOCKET_BUFFER);
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	{
 		return nRet;
 	}
-	// Ñ¡ÊÖÏò²ÃÅĞ·şÎñÆ÷±íÃ÷Éí·İ(Player -> Judger)
+	// é€‰æ‰‹å‘è£åˆ¤æœåŠ¡å™¨è¡¨æ˜èº«ä»½(Player -> Judger)
 	nRet = SendJuderData(hSocket, pSendBuffer, nLen);
 	if (nRet != 0)
 	{
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	}
 	cout << pSendBuffer << endl;
 
-	//Éí·İÑéÖ¤½á¹û(Judger -> Player)¡¡
+	//èº«ä»½éªŒè¯ç»“æœ(Judger -> Player)ã€€
 	memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
 	nRet = RecvJuderData(hSocket, pRecvBuffer);
 	if (nRet != 0)
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 		return nRet;
 	}
 
-	// ½âÎöÑéÖ¤½á¹ûµÄjson
+	// è§£æéªŒè¯ç»“æœçš„json
 	TOKEN_RESULT      stResult;
 	nRet = ParserTokenResult(pRecvBuffer + SOCKET_HEAD_LEN, &stResult);
 	if (nRet != 0)
@@ -232,13 +232,13 @@ int main(int argc, char *argv[])
 	}
 	cout << pRecvBuffer << endl;
 
-	// ÊÇ·ñÑéÖ¤³É¹¦
+	// æ˜¯å¦éªŒè¯æˆåŠŸ
 	if (stResult.nResult != 0)
 	{
 		printf("token check error\n");
 		return -1;
 	}
-	// Ñ¡ÊÖÏò²ÃÅĞ·şÎñÆ÷±íÃ÷×Ô¼ºÒÑ×¼±¸¾ÍĞ÷(Player -> Judger)
+	// é€‰æ‰‹å‘è£åˆ¤æœåŠ¡å™¨è¡¨æ˜è‡ªå·±å·²å‡†å¤‡å°±ç»ª(Player -> Judger)
 	READY_PARAM     stReady;
 
 	strcpy(stReady.szToken, szToken);
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 	}
 	cout << pSendBuffer << endl;
 
-	//¶ÔÕ½¿ªÊ¼Í¨Öª(Judger -> Player)¡¡
+	//å¯¹æˆ˜å¼€å§‹é€šçŸ¥(Judger -> Player)ã€€
 	memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
 	nRet = RecvJuderData(hSocket, pRecvBuffer);
 	if (nRet != 0)
@@ -266,8 +266,8 @@ int main(int argc, char *argv[])
 	}
 	cout << pRecvBuffer << endl;
 
-	// ½âÎöÊı¾İ
-	//Mapinfo ½á¹¹Ìå¿ÉÄÜºÜ´ó£¬²»Ì«ÊÊºÏ·ÅÔÚÕ»ÖĞ£¬¿ÉÒÔ¶¨ÒåÎªÈ«¾Ö»òÕßÄÚ´æ·ÖÅä
+	// è§£ææ•°æ®
+	//Mapinfo ç»“æ„ä½“å¯èƒ½å¾ˆå¤§ï¼Œä¸å¤ªé€‚åˆæ”¾åœ¨æ ˆä¸­ï¼Œå¯ä»¥å®šä¹‰ä¸ºå…¨å±€æˆ–è€…å†…å­˜åˆ†é…
 	MAP_INFO            *pstMapInfo;
 	MATCH_STATUS        *pstMatchStatus;
 	FLY_PLANE          *pstFlyPlane;
@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
 		return nRet;
 	}
 
-	// µÚÒ»´Î°ÑÎŞÈË»úµÄ³õÊ¼¸³Öµ¸øflayplane
+	// ç¬¬ä¸€æ¬¡æŠŠæ— äººæœºçš„åˆå§‹èµ‹å€¼ç»™flayplane
 	pstFlyPlane->nPurchaseNum = 0;
 	pstFlyPlane->nUavNum = pstMapInfo->nUavNum;
 	pstMatchStatus->nUavWeNum = pstMapInfo->nUavNum;
@@ -316,11 +316,11 @@ int main(int argc, char *argv[])
 
 	clock_t clockBegin, clockEnd;
 	clock_t timeCount = 0;
-	// ¸ù¾İ·şÎñÆ÷Ö¸Áî£¬²»Í£µÄ½ÓÊÜ·¢ËÍÊı¾İ
+	// æ ¹æ®æœåŠ¡å™¨æŒ‡ä»¤ï¼Œä¸åœçš„æ¥å—å‘é€æ•°æ®
 	while (1)
 	{
 		cout << "Current step: " << pstMatchStatus->nTime << endl;
-		// ½øĞĞµ±Ç°Ê±¿ÌµÄÊı¾İ¼ÆËã, Ìî³ä·ÉĞĞ¼Æ»®½á¹¹Ìå£¬×¢Òâ£º0Ê±¿Ì²»ÄÜ½øĞĞÒÆ¶¯£¬¼´µÚÒ»´Î½øÈë¸ÃÑ­»·Ê±
+		// è¿›è¡Œå½“å‰æ—¶åˆ»çš„æ•°æ®è®¡ç®—, å¡«å……é£è¡Œè®¡åˆ’ç»“æ„ä½“ï¼Œæ³¨æ„ï¼š0æ—¶åˆ»ä¸èƒ½è¿›è¡Œç§»åŠ¨ï¼Œå³ç¬¬ä¸€æ¬¡è¿›å…¥è¯¥å¾ªç¯æ—¶
 		if (pstMatchStatus->nTime != 0)
 		{
 			clockBegin = clock();
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 			timeCount += clockEnd - clockBegin;
 		}
 
-		//·¢ËÍ·ÉĞĞ¼Æ»®½á¹¹Ìå
+		//å‘é€é£è¡Œè®¡åˆ’ç»“æ„ä½“
 		memset(pSendBuffer, 0, MAX_SOCKET_BUFFER);
 		nRet = CreateFlayPlane(pstFlyPlane, szToken, pSendBuffer, &nLen);
 		if (nRet != 0)
@@ -345,7 +345,7 @@ int main(int argc, char *argv[])
 
 		//printf("%s\n", pSendBuffer);
 
-		// ½ÓÊÜµ±Ç°±ÈÈü×´Ì¬
+		// æ¥å—å½“å‰æ¯”èµ›çŠ¶æ€
 		memset(pRecvBuffer, 0, MAX_SOCKET_BUFFER);
 		nRet = RecvJuderData(hSocket, pRecvBuffer);
 		if (nRet != 0)
@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
 			return nRet;
 		}
 
-		// ½âÎö
+		// è§£æ
 		nRet = ParserMatchStatus(pRecvBuffer + SOCKET_HEAD_LEN, pstMatchStatus);
 		if (nRet != 0)
 		{
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
 
 		if (pstMatchStatus->nMacthStatus == 1)
 		{
-			// ±ÈÈü½áÊø
+			// æ¯”èµ›ç»“æŸ
 			printf("game over, we value %d, enemy value %d\n", pstMatchStatus->nWeValue, pstMatchStatus->nEnemyValue);
 			cout << "Total time: " << timeCount << endl;
 			return 0;
@@ -370,9 +370,9 @@ int main(int argc, char *argv[])
 	}
 
 	delete pstAI;
-	// ¹Ø±Õsocket
+	// å…³é—­socket
 	OSCloseSocket(hSocket);
-	// ×ÊÔ´»ØÊÕ
+	// èµ„æºå›æ”¶
 	free(pRecvBuffer);
 	free(pSendBuffer);
 	free(pstMapInfo);

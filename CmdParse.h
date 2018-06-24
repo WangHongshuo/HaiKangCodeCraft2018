@@ -4,7 +4,7 @@
  *
  *	@author     lipengfei
  *	@date       2018/05/10
- *	@note       ÀúÊ·¼ÇÂ¼£º
+ *	@note       å†å²è®°å½•ï¼š
  *	@note       V1.0.0
  *	@warning
  */
@@ -18,7 +18,7 @@
 
 using std::vector;
 using std::deque;
-const int SOCKET_HEAD_LEN = 8;                      ///< 8¸ö×Ö½ÚµÄÍ·²¿³¤¶È
+const int SOCKET_HEAD_LEN = 8;                      ///< 8ä¸ªå­—èŠ‚çš„å¤´éƒ¨é•¿åº¦
 
 struct CONNECT_NOTICE
 {
@@ -104,11 +104,11 @@ struct UAV
 	int     nNO;
 	char    szType[8];
 	Point3 nPos;
-	int     nLoadWeight;            ///< ¸útype¶ÔÓ¦µÄÎŞÈË»úµÄÔØÖØÒ»Ñù£¬
+	int     nLoadWeight;            ///< è·Ÿtypeå¯¹åº”çš„æ— äººæœºçš„è½½é‡ä¸€æ ·ï¼Œ
 	UAV_STATUS  nStatus;
 	int     nGoodsNo;
 	int     nRemainPower;
-	// ×Ô¶¨ÒåÊı¾İ
+	// è‡ªå®šä¹‰æ•°æ®
 	Point3 nTarget;
 	Point3 nFrom;
 	UAV_ACTION nAction = UAV_ACTION::UAV_STANDBY;
